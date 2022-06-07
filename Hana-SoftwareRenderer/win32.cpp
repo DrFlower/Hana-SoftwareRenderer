@@ -11,9 +11,12 @@
 //#include "../core/private.h"
 //Hana End
 
-#include "platform.h"
-#include "macro.h"
+//Hana Begin
+#include "graphics.h"
 #include "image.h"
+#include "macro.h"
+#include "platform.h"
+//Hana End
 
 struct window {
     HWND handle;
@@ -286,12 +289,33 @@ static void present_surface(window_t *window) {
     ReleaseDC(window->handle, window_dc);
 }
 
-//Hana Begin
-//void window_draw_buffer(window_t *window, framebuffer_t *buffer) {
-//    private_blit_bgr(buffer, window->surface);
-//    present_surface(window);
-//}
-//Hana End
+void window_draw_buffer(window_t *window, framebuffer_t *buffer) {
+    //Hana Begin
+    //private_blit_bgr(buffer, window->surface);
+    //Hana End
+
+    int width = window->surface->width;
+    int height = window->surface->height;
+    int r, c;
+
+    assert(buffer->width == window->surface->width && buffer->height == window->surface->height);
+    assert(window->surface->format == FORMAT_LDR && window->surface->channels == 4);
+
+    for (r = 0; r < height; r++) {
+        for (c = 0; c < width; c++) {
+            int flipped_r = height - 1 - r;
+            int src_index = (r * width + c) * 4;
+            int dst_index = (flipped_r * width + c) * 4;
+            unsigned char* src_pixel = &buffer->color_buffer[src_index];
+            unsigned char* dst_pixel = &window->surface->ldr_buffer[dst_index];
+            dst_pixel[0] = src_pixel[2];  /* blue */
+            dst_pixel[1] = src_pixel[1];  /* green */
+            dst_pixel[2] = src_pixel[0];  /* red */
+        }
+    }
+
+    present_surface(window);
+}
 
 /* input related functions */
 

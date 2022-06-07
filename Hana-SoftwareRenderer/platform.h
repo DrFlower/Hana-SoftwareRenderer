@@ -1,9 +1,7 @@
 #ifndef PLATFORM_H
 #define PLATFORM_H
 
-//Hana Begin
-//#include "graphics.h"
-//Hana End
+#include "graphics.h"
 
 typedef struct window window_t;
 typedef enum {KEY_A, KEY_D, KEY_S, KEY_W, KEY_SPACE, KEY_NUM} keycode_t;
@@ -24,7 +22,7 @@ void window_destroy(window_t *window);
 int window_should_close(window_t *window);
 void window_set_userdata(window_t *window, void *userdata);
 void *window_get_userdata(window_t *window);
-//void window_draw_buffer(window_t *window, framebuffer_t *buffer);
+void window_draw_buffer(window_t *window, framebuffer_t *buffer);
 
 /* input related functions */
 void input_poll_events(void);

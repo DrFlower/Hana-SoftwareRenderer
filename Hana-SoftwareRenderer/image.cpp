@@ -5,9 +5,9 @@
 #include <string.h>
 #include "image.h"
 #include "macro.h"
+#include "maths.h"
 
 //Hana Begin
-//#include "maths.h"
 //#include "private.h"
 //Hana End
 
@@ -50,7 +50,6 @@ void image_release(image_t *image) {
 static image_t *load_tga_image(const char *filename);
 static image_t *load_hdr_image(const char *filename);
 
-//Hana Begin
 //image_t *image_load(const char *filename) {
 //    const char *extension = private_get_extension(filename);
 //    if (strcmp(extension, "tga") == 0) {
@@ -62,7 +61,6 @@ static image_t *load_hdr_image(const char *filename);
 //        return NULL;
 //    }
 //}
-//Hana End
 
 static void save_tga_image(image_t *image, const char *filename);
 static void save_hdr_image(image_t *image, const char *filename);
