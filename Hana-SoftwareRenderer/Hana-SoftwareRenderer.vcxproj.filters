@@ -36,7 +36,7 @@
     <ClCompile Include="maths.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="vector.cpp">
+    <ClCompile Include="math.cpp">
       <Filter>源文件\math</Filter>
     </ClCompile>
   </ItemGroup>
@@ -56,7 +56,7 @@
     <ClInclude Include="maths.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="vector.h">
+    <ClInclude Include="math.h">
       <Filter>头文件\math</Filter>
     </ClInclude>
   </ItemGroup>

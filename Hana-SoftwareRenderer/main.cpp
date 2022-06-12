@@ -1,5 +1,6 @@
 #include "iostream"
 #include "platform.h"
+#include "math.h"
 
 static const char* const WINDOW_TITLE = "Viewer";
 static const int WINDOW_WIDTH = 800;
@@ -33,7 +34,16 @@ int main()
 		}
 	}
 
+	Matrix3x3 m;
+	m[0] = Vector3f(-4, -3, 3);
+	m[1] = Vector3f(0, 2, -2);
+	m[2] = Vector3f(1, 4, -1);
 
+	std::cout << m << std::endl;
+
+	Matrix3x3 m2 = m.invert();
+
+	std::cout << m2 << std::endl;
 
 	num_frames = 0;
 	prev_time = platform_get_time();
