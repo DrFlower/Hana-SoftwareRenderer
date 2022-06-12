@@ -77,48 +77,6 @@ void triangle(Matrix<4, 3, float>& clipc, Model* model, IShader& shader, framebu
 			float frag_depth = clipc[2] * bc_clip;
 			color = TGAColor(frag_depth * 255, frag_depth * 255, frag_depth * 255);
 
-			//bool in = false;
-
-			//Vector2f check1 = Vector2f(339.f / 1200.f * 800, 72.f / 1200.f * 800);
-			//Vector2f check2 = Vector2f(921.f / 1200.f * 800, 440.f / 1200.f * 800);
-			//if (P.x > check1.x && P.y > check1.y && P.x < check2.x && P.y < check2.y)
-			//{
-			//	in = true;
-			//}
-
-			//if (bc_screen.x < 0 || bc_screen.y < 0 || bc_screen.z < 0)
-			//{
-			//	//if(in)
-			//	//	color = TGAColor(255, 0, 0);
-			//	//else
-			//	//{
-			//	//	continue;
-			//	//}
-
-			//	continue;
-			//}
-			//
-
-			//if (frameBuffer->get_depth(P.x, P.y) > frag_depth)
-			//{
-			//	if(in)
-			//		color = TGAColor(0, 255, 0);
-			//	else
-			//	{
-			//		continue;
-			//	}
-
-			//	//continue;
-			//}
-
-			//bool discard = false;
-
-			//if (bc_screen.x > 0 && bc_screen.y > 0 && bc_screen.z>0 && frameBuffer->get_depth(P.x, P.y) <= frag_depth)
-			//{
-			//	discard = shader.fragment(model, bc_clip, color);
-			//}
-
-
 			if (bc_screen.x < 0 || bc_screen.y < 0 || bc_screen.z<0 || frameBuffer->get_depth(P.x, P.y) > frag_depth) continue;
 			bool discard = shader.fragment(model, bc_clip, color);
 
