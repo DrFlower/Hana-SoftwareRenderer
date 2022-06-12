@@ -8,7 +8,7 @@
 #include "platform.h"
 #include "math.h"
 
-static const char* const WINDOW_TITLE = "Viewer";
+static const char* const WINDOW_TITLE = "Hana-SoftwareRenderer";
 static const int WINDOW_WIDTH = 800;
 static const int WINDOW_HEIGHT = 800;
 
@@ -240,9 +240,8 @@ int main()
 	ToonShader toonShader;
 	TextureShader textureShader;
 	NormalmappingShader normalmapping;
-	SpecularShader specularShader;
 	TangentSpaceNormalmappingShader tangentSpaceNormalmappingShader;
-
+	SpecularShader specularShader;
 
 	num_frames = 0;
 	prev_time = platform_get_time();
@@ -250,7 +249,7 @@ int main()
 	while (!window_should_close(window)) {
 		float curr_time = platform_get_time();
 		float delta_time = curr_time - prev_time;
-		RenderModel("african_head", framebuffer, textureShader);
+		RenderModel("african_head", framebuffer, tangentSpaceNormalmappingShader);
 		window_draw_buffer(window, framebuffer);
 		num_frames += 1;
 		if (curr_time - print_time >= 1) {
@@ -265,7 +264,7 @@ int main()
 		input_poll_events();
 
 		framebuffer_clear_color(framebuffer, vec4_t());
-		framebuffer_clear_depth(framebuffer, 0);
+		framebuffer_clear_depth(framebuffer, -std::numeric_limits<float>::max());
 	}
 
 	if (model)
