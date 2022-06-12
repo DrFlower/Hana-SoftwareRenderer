@@ -13,34 +13,35 @@ public:
 };
 
 template<typename T> class Vector<2, T> {
-private:
-	T x, y;
 public:
+	T x, y;
 	Vector() :x(T()), y(T()) {};
 	Vector(T _x, T _y) :x(_x), y(_y) {};
+	template <class U> Vector<2, T>(const Vector<2, U>& v);
 	T& operator[](const size_t i) { assert(i >= 0 && i <= 1); return i == 0 ? x : y; }
 	const T& operator[](const size_t i) const { assert(i >= 0 && i <= 1); return i == 0 ? x : y; }
 	float normal() { return std::sqrt(x * x + y * y); }
 };
 
 template<typename T> class Vector<3, T> {
-private:
-	T x, y, z;
 public:
+	T x, y, z;
 	Vector() :x(T()), y(T()), z(T()) {};
 	Vector(T _x, T _y, T _z) :x(_x), y(_y), z(_z) {};
+	template <class U> Vector<3, T>(const Vector<3, U>& v);
 	T& operator[](const size_t i) { assert(i >= 0 && i <= 2); return i == 0 ? x : i == 1 ? y : z; }
 	const T& operator[](const size_t i) const { assert(i >= 0 && i <= 2); return i == 0 ? x : i == 1 ? y : z; }
 	float normal() { return std::sqrt(x * x + y * y + z * z); }
+	Vector<3, T>& normalize(T l = 1) { *this = (*this) * (l / normal()); return *this; }
 };
 
 template<size_t SIZE, typename T> Vector<SIZE, T> operator+(Vector<SIZE, T> lhs, const Vector<SIZE, T>& rhs) {
-	for (size_t i = SIZE; i--; lhs += rhs[i]);
+	for (size_t i = SIZE; i--; lhs[i] += rhs[i]);
 	return lhs;
 }
 
 template<size_t SIZE, typename T> Vector<SIZE, T> operator-(Vector<SIZE, T> lhs, const Vector<SIZE, T>& rhs) {
-	for (size_t i = SIZE; i--; lhs -= rhs[i]);
+	for (size_t i = SIZE; i--; lhs[i] -= rhs[i]);
 	return lhs;
 }
 
@@ -60,9 +61,9 @@ template<size_t SIZE, typename T, typename U> Vector<SIZE, T>operator /(Vector<S
 	return lhs;
 }
 
-template<size_t TARGET_SIZE, size_t SIZE, typename T> Vector<SIZE, T> embed(const Vector<SIZE, T>& v, T fill = 1) {
-	Vector<SIZE, T> ret;
-	for (size_t i = TARGET_SIZE; i--; ret[i] = i > SIZE ? fill : v[i]);
+template<size_t TARGET_SIZE, size_t SIZE, typename T> Vector<TARGET_SIZE, T> embed(const Vector<SIZE, T>& v, T fill = 1) {
+	Vector<TARGET_SIZE, T> ret;
+	for (size_t i = TARGET_SIZE; i--; ret[i] = (i < SIZE ? v[i] : fill));
 	return ret;
 }
 
@@ -120,7 +121,7 @@ public:
 		return rows[idx];
 	}
 
-	Vector<ROW_SIZE, T>& getCol(const size_t idx) {
+	Vector<ROW_SIZE, T> getCol(const size_t idx) const {
 		assert(idx < COL_SIZE);
 		Vector<ROW_SIZE, T> ret;
 		for (size_t i = ROW_SIZE; i--; ret[i] = rows[i][idx]);
@@ -133,18 +134,25 @@ public:
 	}
 
 	//µ•Œªæÿ’Û
+	//static Matrix<ROW_SIZE, COL_SIZE, T> identity() {
+	//	assert(ROW_SIZE == COL_SIZE);
+	//	Matrix<ROW_SIZE, COL_SIZE, T> ret;
+	//	for (size_t i = 0; i < ROW_SIZE; i++)
+	//	{
+	//		ret[i][i] = 1;
+	//	}
+	//	return ret;
+	//}
 	static Matrix<ROW_SIZE, COL_SIZE, T> identity() {
-		assert(ROW_SIZE == COL_SIZE);
 		Matrix<ROW_SIZE, COL_SIZE, T> ret;
-		for (size_t i = 0; i < ROW_SIZE; i++)
-		{
-			ret[i][i] = 1;
-		}
+		for (size_t i = ROW_SIZE; i--; )
+			for (size_t j = COL_SIZE; j--; ret[i][j] = (i == j));
 		return ret;
 	}
 
+
 	//◊™÷√æÿ’Û
-	Matrix<ROW_SIZE, COL_SIZE, T> transpose() {
+	Matrix<COL_SIZE, ROW_SIZE, T> transpose() {
 		Matrix<COL_SIZE, ROW_SIZE, T> ret;
 		for (size_t i = COL_SIZE; i--; ret[i] = this->getCol(i));
 		return ret;
@@ -200,7 +208,7 @@ template<size_t ROW_SIZE, size_t COL_SIZE, typename T> Vector<ROW_SIZE, T> opera
 template<size_t R1, size_t C1, size_t C2, typename T>Matrix<R1, C2, T> operator*(const Matrix<R1, C1, T>& lhs, const Matrix<C1, C2, T>& rhs) {
 	Matrix<R1, C2, T> result;
 	for (size_t i = R1; i--; )
-		for (size_t j = C2; j--; result[i][j] = lhs[i] * rhs.col(j));
+		for (size_t j = C2; j--; result[i][j] = lhs[i] * rhs.getCol(j));
 	return result;
 }
 
