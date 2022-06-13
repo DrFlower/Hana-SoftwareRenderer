@@ -7,10 +7,41 @@
 #include "iostream"
 #include "platform.h"
 #include "math.h"
+#include "camera.h"
 
 static const char* const WINDOW_TITLE = "Hana-SoftwareRenderer";
 static const int WINDOW_WIDTH = 800;
 static const int WINDOW_HEIGHT = 800;
+
+static const vec3_t CAMERA_POSITION = { 0, 0, 1.5f };
+static const vec3_t CAMERA_TARGET = { 0, 0, 0 };
+
+static const float CLICK_DELAY = 0.25f;
+
+class record_t {
+public:
+	/* orbit */
+	int is_orbiting;
+	vec2_t orbit_pos;
+	vec2_t orbit_delta;
+	/* pan */
+	int is_panning;
+	vec2_t pan_pos;
+	vec2_t pan_delta;
+	/* zoom */
+	float dolly_delta;
+	/* light */
+	float light_theta;
+	float light_phi;
+	/* click */
+	float press_time;
+	float release_time;
+	vec2_t press_pos;
+	vec2_t release_pos;
+	int single_click;
+	int double_click;
+	vec2_t click_pos;
+};
 
 Model* model = NULL;
 
@@ -219,11 +250,94 @@ void RenderModel(std::string modelName, framebuffer_t* framebuffer, IShader& sha
 	}
 }
 
+
+
+static vec2_t get_pos_delta(vec2_t old_pos, vec2_t new_pos) {
+	vec2_t delta = vec2_sub(new_pos, old_pos);
+	return vec2_div(delta, (float)WINDOW_HEIGHT);
+}
+
+static vec2_t get_cursor_pos(window_t* window) {
+	float xpos, ypos;
+	input_query_cursor(window, &xpos, &ypos);
+	//std::cout << "get_cursor_pos" << xpos << "," << ypos << std::endl;
+	return vec2_new(xpos, ypos);
+}
+
+static void button_callback(window_t* window, button_t button, int pressed) {
+	record_t* record = (record_t*)window_get_userdata(window);
+	vec2_t cursor_pos = get_cursor_pos(window);
+	if (button == BUTTON_L) {
+		float curr_time = platform_get_time();
+		if (pressed) {
+			record->is_orbiting = 1;
+			record->orbit_pos = cursor_pos;
+			record->press_time = curr_time;
+			record->press_pos = cursor_pos;
+		}
+		else {
+			float prev_time = record->release_time;
+			vec2_t pos_delta = get_pos_delta(record->orbit_pos, cursor_pos);
+			record->is_orbiting = 0;
+			record->orbit_delta = vec2_add(record->orbit_delta, pos_delta);
+			if (prev_time && curr_time - prev_time < CLICK_DELAY) {
+				record->double_click = 1;
+				record->release_time = 0;
+			}
+			else {
+				record->release_time = curr_time;
+				record->release_pos = cursor_pos;
+			}
+		}
+	}
+	else if (button == BUTTON_R) {
+		if (pressed) {
+			record->is_panning = 1;
+			record->pan_pos = cursor_pos;
+		}
+		else {
+			vec2_t pos_delta = get_pos_delta(record->pan_pos, cursor_pos);
+			record->is_panning = 0;
+			record->pan_delta = vec2_add(record->pan_delta, pos_delta);
+		}
+	}
+}
+
+static void update_camera(window_t* window, camera_t* camera,
+	record_t* record) {
+	vec2_t cursor_pos = get_cursor_pos(window);
+	if (record->is_orbiting) {
+		vec2_t pos_delta = get_pos_delta(record->orbit_pos, cursor_pos);
+		record->orbit_delta = vec2_add(record->orbit_delta, pos_delta);
+		record->orbit_pos = cursor_pos;
+		//std::cout << "orbit_delta" << record->orbit_delta.x << "," << record->orbit_delta.y << std::endl;
+	}
+	if (record->is_panning) {
+		vec2_t pos_delta = get_pos_delta(record->pan_pos, cursor_pos);
+		record->pan_delta = vec2_add(record->pan_delta, pos_delta);
+		record->pan_pos = cursor_pos;
+	}
+	if (input_key_pressed(window, KEY_SPACE)) {
+		camera_set_transform(camera, CAMERA_POSITION, CAMERA_TARGET);
+	}
+	else {
+		motion_t motion;
+		motion.orbit = record->orbit_delta;
+		motion.pan = record->pan_delta;
+		motion.dolly = record->dolly_delta;
+		camera_update_transform(camera, motion);
+	}
+}
+
 int main()
 {
 	platform_initialize();
 	window_t* window;
 	framebuffer_t* framebuffer;
+	camera_t* camera;
+	record_t record;
+	callbacks_t callbacks;
+	float aspect;
 	float prev_time;
 	float print_time;
 	int num_frames;
@@ -235,6 +349,14 @@ int main()
 
 	window = window_create(WINDOW_TITLE, WINDOW_WIDTH, WINDOW_HEIGHT);
 	framebuffer = framebuffer_create(WINDOW_WIDTH, WINDOW_HEIGHT);
+	aspect = (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT;
+	camera = camera_create(CAMERA_POSITION, CAMERA_TARGET, aspect);
+
+	record = record_t();
+	//memset(&record, 0, sizeof(record_t));
+
+	memset(&callbacks, 0, sizeof(callbacks_t));
+	callbacks.button_callback = button_callback;
 
 	GouraudShader gouraudShader;
 	ToonShader toonShader;
@@ -243,13 +365,19 @@ int main()
 	TangentSpaceNormalmappingShader tangentSpaceNormalmappingShader;
 	SpecularShader specularShader;
 
+	window_set_userdata(window, &record);
+	input_set_callbacks(window, callbacks);
+
 	num_frames = 0;
 	prev_time = platform_get_time();
 	print_time = prev_time;
 	while (!window_should_close(window)) {
 		float curr_time = platform_get_time();
 		float delta_time = curr_time - prev_time;
-		RenderModel("african_head", framebuffer, tangentSpaceNormalmappingShader);
+
+		update_camera(window, camera, &record);
+
+		RenderModel("african_head", framebuffer, gouraudShader);
 		window_draw_buffer(window, framebuffer);
 		num_frames += 1;
 		if (curr_time - print_time >= 1) {
@@ -262,6 +390,12 @@ int main()
 		prev_time = curr_time;
 
 		input_poll_events();
+
+		record.orbit_delta = vec2_new(0, 0);
+		record.pan_delta = vec2_new(0, 0);
+		record.dolly_delta = 0;
+		record.single_click = 0;
+		record.double_click = 0;
 
 		framebuffer_clear_color(framebuffer, vec4_t());
 		framebuffer_clear_depth(framebuffer, -std::numeric_limits<float>::max());

@@ -53,33 +53,87 @@ Vector3f barycentric(Vector2f A, Vector2f B, Vector2f C, Vector2f P) {
 	return Vector3f(-1, 1, 1); // in this case generate negative coordinates, it will be thrown away by the rasterizator
 }
 
-void triangle(Matrix<4, 3, float>& clipc, Model* model, IShader& shader, framebuffer_t* frameBuffer) {
+//void triangle(Matrix<4, 3, float>& clipc, Model* model, IShader& shader, framebuffer_t* frameBuffer) {
+//	Matrix<3, 4, float> pts = (Viewport * clipc).transpose(); // transposed to ease access to each of the points
+//	Matrix<3, 2, float> pts2;
+//	for (int i = 0; i < 3; i++) pts2[i] = proj<2>(pts[i] / pts[i][3]);
+//
+//	Vector2f bboxmin(std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
+//	Vector2f bboxmax(-std::numeric_limits<float>::max(), -std::numeric_limits<float>::max());
+//	Vector2f clamp(frameBuffer->width - 1, frameBuffer->height - 1);
+//	for (int i = 0; i < 3; i++) {
+//		for (int j = 0; j < 2; j++) {
+//			bboxmin[j] = std::max(0.f, std::min(bboxmin[j], pts2[i][j]));
+//			bboxmax[j] = std::min(clamp[j], std::max(bboxmax[j], pts2[i][j]));
+//		}
+//	}
+//	Vector2i P;
+//	TGAColor color;
+//	for (P.x = bboxmin.x; P.x <= bboxmax.x; P.x++) {
+//		for (P.y = bboxmin.y; P.y <= bboxmax.y; P.y++) {
+//			Vector3f bc_screen = barycentric(pts2[0], pts2[1], pts2[2], P);
+//			Vector3f bc_clip = Vector3f(bc_screen.x / pts[0][3], bc_screen.y / pts[1][3], bc_screen.z / pts[2][3]);
+//			bc_clip = bc_clip / (bc_clip.x + bc_clip.y + bc_clip.z);
+//			float frag_depth = clipc[2] * bc_clip;
+//	
+//			if (bc_screen.x < 0 || bc_screen.y < 0 || bc_screen.z<0 || frameBuffer->get_depth(P.x, P.y) > frag_depth) continue;
+//			bool discard = shader.fragment(model, bc_clip, color);
+//
+//			if (!discard) {
+//				frameBuffer->set_depth(P.x, P.y, frag_depth);
+//				frameBuffer->set_color(P.x, P.y, color);
+//			}
+//		}
+//	}
+//}
+
+//把上一步中画下半部分轮廓的逻辑扩展到可以画出上下两部分
+//补充填充三角形内部像素的逻辑
+//到这里已经实现了2D三角形的绘制
+void triangle(Matrix<4, 3, float>& clipc, Model* model, IShader& shader, framebuffer_t* frameBuffer)
+{
 	Matrix<3, 4, float> pts = (Viewport * clipc).transpose(); // transposed to ease access to each of the points
 	Matrix<3, 2, float> pts2;
 	for (int i = 0; i < 3; i++) pts2[i] = proj<2>(pts[i] / pts[i][3]);
 
-	Vector2f bboxmin(std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
-	Vector2f bboxmax(-std::numeric_limits<float>::max(), -std::numeric_limits<float>::max());
-	Vector2f clamp(frameBuffer->width - 1, frameBuffer->height - 1);
-	for (int i = 0; i < 3; i++) {
-		for (int j = 0; j < 2; j++) {
-			bboxmin[j] = std::max(0.f, std::min(bboxmin[j], pts2[i][j]));
-			bboxmax[j] = std::min(clamp[j], std::max(bboxmax[j], pts2[i][j]));
-		}
-	}
-	Vector2i P;
-	TGAColor color;
-	for (P.x = bboxmin.x; P.x <= bboxmax.x; P.x++) {
-		for (P.y = bboxmin.y; P.y <= bboxmax.y; P.y++) {
+	Vector2i t0 = pts2[0];
+	Vector2i t1 = pts2[1];
+	Vector2i t2 = pts2[2];
+	if (t0.y > t1.y) std::swap(t0, t1);
+	if (t0.y > t2.y) std::swap(t0, t2);
+	if (t1.y > t2.y) std::swap(t1, t2);
+
+	//整个三角形的y轴长度
+	int total_height = t2.y - t0.y;
+
+	//沿y轴从最低点遍历到最高顶点的高度
+	for (int i = 0; i < total_height; i++)
+	{
+		//是否为第二部分(上半部分)，高于或等于中间顶点为上半部分，低于中间顶点为下半部分
+		bool second_half = i > t1.y - t0.y || t1.y == t0.y;
+
+		//上半部分高度为最高顶点减去中间顶点的高度，下半部分为中间顶点减去最低顶点的高度
+		int segment_height = second_half ? t2.y - t1.y : t1.y - t0.y;
+
+		float alpha = (float)i / total_height;
+		//下半部分直接取i来计算，上半部分需要把i减去下半部分的高度
+		float beta = (float)(i - (second_half ? t1.y - t0.y : 0)) / segment_height;
+
+		Vector2i A = t0 + (t2 - t0) * alpha;//求出当前y坐标对应的最高顶点与最低顶点连线上的点
+		Vector2i B = second_half ? t1 + (t2 - t1) * beta : t0 + (t1 - t0) * beta;//求出当前y坐标对应的中间顶点与最低顶点连线上的点
+		//沿x轴，从小到大画点，若A点的x比B点的x大，则交换两个点
+		if (A.x > B.x) std::swap(A, B);
+
+		for (int j = A.x; j <= B.x; j++) {
+			Vector2i P = Vector2i(j, t0.y + i);
 			Vector3f bc_screen = barycentric(pts2[0], pts2[1], pts2[2], P);
 			Vector3f bc_clip = Vector3f(bc_screen.x / pts[0][3], bc_screen.y / pts[1][3], bc_screen.z / pts[2][3]);
 			bc_clip = bc_clip / (bc_clip.x + bc_clip.y + bc_clip.z);
 			float frag_depth = clipc[2] * bc_clip;
-			color = TGAColor(frag_depth * 255, frag_depth * 255, frag_depth * 255);
+			TGAColor color;
 
-			if (bc_screen.x < 0 || bc_screen.y < 0 || bc_screen.z<0 || frameBuffer->get_depth(P.x, P.y) > frag_depth) continue;
+			if (frameBuffer->get_depth(P.x, P.y) > frag_depth) continue;
 			bool discard = shader.fragment(model, bc_clip, color);
-
 			if (!discard) {
 				frameBuffer->set_depth(P.x, P.y, frag_depth);
 				frameBuffer->set_color(P.x, P.y, color);
