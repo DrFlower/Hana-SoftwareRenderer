@@ -11,7 +11,7 @@
 
 static const char* const WINDOW_TITLE = "Hana-SoftwareRenderer";
 static const int WINDOW_WIDTH = 800;
-static const int WINDOW_HEIGHT = 800;
+static const int WINDOW_HEIGHT = 600;
 
 static const vec3_t CAMERA_POSITION = { 0, 0, 1.5f };
 static const vec3_t CAMERA_TARGET = { 0, 0, 0 };
@@ -342,9 +342,11 @@ int main()
 	float print_time;
 	int num_frames;
 
-	lookat(eye, center, up);
+	//lookat(eye, center, up);
 	viewport(WINDOW_WIDTH / 8, WINDOW_HEIGHT / 8, WINDOW_WIDTH * 3 / 4, WINDOW_HEIGHT * 3 / 4);
-	projection(-1.f / (eye - center).normal());
+	//projection(-1.f / (eye - center).normal());
+
+
 	light_dir.normalize();
 
 	window = window_create(WINDOW_TITLE, WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -376,8 +378,35 @@ int main()
 		float delta_time = curr_time - prev_time;
 
 		update_camera(window, camera, &record);
+		ModelView = Matrix4x4::identity();
+		mat4_t _mv = camera_get_view_matrix(camera);
+		for (size_t i = 0; i < 4; i++)
+		{
+			for (size_t j = 0; j < 4; j++)
+			{
+				ModelView[i][j] = _mv.m[i][j];
+			}
+		}
 
-		RenderModel("african_head", framebuffer, gouraudShader);
+		mat4_t _mv2 = camera_get_proj_matrix(camera);
+		Projection = Matrix4x4::identity();
+
+		Matrix4x4 m3 = Matrix4x4::identity();
+		m3[0][0] = -1;
+		m3[1][1] = -1;
+		m3[2][2] = -1;
+		m3[3][3] = -1;
+		for (size_t i = 0; i < 4; i++)
+		{
+			for (size_t j = 0; j < 4; j++)
+			{
+				Projection[i][j] = _mv2.m[i][j];
+			}
+		}
+
+		Projection = Projection * m3;
+
+		RenderModel("african_head", framebuffer, tangentSpaceNormalmappingShader);
 		window_draw_buffer(window, framebuffer);
 		num_frames += 1;
 		if (curr_time - print_time >= 1) {
