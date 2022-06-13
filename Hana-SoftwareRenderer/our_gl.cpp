@@ -40,6 +40,16 @@ void lookat(Vector3f eye, Vector3f center, Vector3f up) {
 	ModelView = Minv * Tr;
 }
 
+bool is_back_facing(Vector3f* ndc_coords) {
+	Vector3f a = ndc_coords[0];
+	Vector3f b = ndc_coords[1];
+	Vector3f c = ndc_coords[2];
+	float signed_area = a.x * b.y - a.y * b.x +
+		b.x * c.y - b.y * c.x +
+		c.x * a.y - c.y * a.x;
+	return signed_area <= 0;
+}
+
 Vector3f barycentric(Vector2f A, Vector2f B, Vector2f C, Vector2f P) {
 	Vector3f s[2];
 	for (int i = 2; i--; ) {
@@ -53,8 +63,13 @@ Vector3f barycentric(Vector2f A, Vector2f B, Vector2f C, Vector2f P) {
 	return Vector3f(-1, 1, 1); // in this case generate negative coordinates, it will be thrown away by the rasterizator
 }
 
-void triangle(Matrix<4, 3, float>& clipc, Model* model, IShader& shader, framebuffer_t* frameBuffer) {
-	Matrix<3, 4, float> pts = (Viewport * clipc).transpose(); // transposed to ease access to each of the points
+void triangle(Matrix<4, 3, float>& clip_coords, Model* model, IShader& shader, framebuffer_t* frameBuffer) {
+	Matrix<3, 4, float> pts = (Viewport * clip_coords).transpose(); // transposed to ease access to each of the points
+
+	//Vector3f pts1[3];
+	//for (int i = 0; i < 3; i++) pts1[i] = proj<3>(pts[i] / pts[i][3]);
+	//if (is_back_facing(pts1)) return;
+
 	Matrix<3, 2, float> pts2;
 	for (int i = 0; i < 3; i++) pts2[i] = proj<2>(pts[i] / pts[i][3]);
 
@@ -74,7 +89,7 @@ void triangle(Matrix<4, 3, float>& clipc, Model* model, IShader& shader, framebu
 			Vector3f bc_screen = barycentric(pts2[0], pts2[1], pts2[2], P);
 			Vector3f bc_clip = Vector3f(bc_screen.x / pts[0][3], bc_screen.y / pts[1][3], bc_screen.z / pts[2][3]);
 			bc_clip = bc_clip / (bc_clip.x + bc_clip.y + bc_clip.z);
-			float frag_depth = clipc[2] * bc_clip;
+			float frag_depth = clip_coords[2] * bc_clip;
 
 			if (bc_screen.x < 0 || bc_screen.y < 0 || bc_screen.z<0 || frameBuffer->get_depth(P.x, P.y) > frag_depth) continue;
 			bool discard = shader.fragment(model, bc_clip, color);
@@ -93,6 +108,11 @@ void triangle(Matrix<4, 3, float>& clipc, Model* model, IShader& shader, framebu
 //void triangle(Matrix<4, 3, float>& clipc, Model* model, IShader& shader, framebuffer_t* frameBuffer)
 //{
 //	Matrix<3, 4, float> pts = (Viewport * clipc).transpose(); // transposed to ease access to each of the points
+//
+//	Vector3f pts1[3];
+//	for (int i = 0; i < 3; i++) pts1[i] = proj<3>(pts[i] / pts[i][3]);
+//	if (is_back_facing(pts1)) return;
+//
 //	Matrix<3, 2, float> pts2;
 //	for (int i = 0; i < 3; i++) pts2[i] = proj<2>(pts[i] / pts[i][3]);
 //
