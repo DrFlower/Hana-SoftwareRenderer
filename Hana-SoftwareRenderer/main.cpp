@@ -46,9 +46,9 @@ public:
 Model* model = NULL;
 
 Vector3f light_dir(1, 1, 1);
-Vector3f       eye(1, 1, 3);
-Vector3f    center(0, 0, 0);
-Vector3f        up(0, 1, 0);
+//Vector3f       eye(1, 1, 3);
+//Vector3f    center(0, 0, 0);
+//Vector3f        up(0, 1, 0);
 
 struct GouraudShader : public IShader {
 	Vector3f varying_intensity; // written by vertex shader, read by fragment shader
@@ -183,6 +183,59 @@ struct TangentSpaceNormalmappingShader :public IShader
 	}
 };
 
+struct TestShader : public IShader
+{
+	Matrix<2, 3, float> varying_uv;  // triangle uv coordinates, written by the vertex shader, read by the fragment shader
+	//Matrix<4, 4, float> uniform_M;   //  Projection*ModelView
+	//Matrix<3, 3, float> varying_nrm; // normal per vertex to be interpolated by FS
+	//Matrix<3, 3, float> ndc_tri;     // triangle in normalized device coordinates
+	Matrix<3, 4, float> Ttow;
+	virtual Vector4f vertex(Model* model, int iface, int nthvert) override
+	{
+		varying_uv.setCol(nthvert, model->uv(iface, nthvert));
+		//varying_nrm.setCol(nthvert, proj<3>((Projection * ModelView).invert_transpose() * embed<4>(model->normal(iface, nthvert), 0.f)));
+		Vector4f gl_Vertex = Projection * ModelView * embed<4>(model->vert(iface, nthvert));
+		varying_tri.setCol(nthvert, gl_Vertex);
+		//uniform_M = Projection * ModelView;
+		//ndc_tri.setCol(nthvert, proj<3>(gl_Vertex / gl_Vertex[3]));
+
+		Vector3f worldPos = model->vert(iface, nthvert);
+		Vector3f worldNormal = model->normal(iface, nthvert);
+	
+
+		return gl_Vertex;
+	}
+	virtual bool fragment(Model* model, Vector3f bar, TGAColor& color) override
+	{
+		//Vector3f bn = (varying_nrm * bar).normalize();
+		//Vector2f uv = varying_uv * bar;
+
+		//Matrix<3, 3, float> A;
+		//A[0] = ndc_tri.getCol(1) - ndc_tri.getCol(0);
+		//A[1] = ndc_tri.getCol(2) - ndc_tri.getCol(0);
+		//A[2] = bn;
+
+		//Matrix<3, 3, float> AI = A.invert();
+
+		//Vector3f i = AI * Vector3f(varying_uv[0][1] - varying_uv[0][0], varying_uv[0][2] - varying_uv[0][0], 0);
+		//Vector3f j = AI * Vector3f(varying_uv[1][1] - varying_uv[1][0], varying_uv[1][2] - varying_uv[1][0], 0);
+
+		//Matrix<3, 3, float> B;
+		//B.setCol(0, i.normalize());
+		//B.setCol(1, j.normalize());
+		//B.setCol(2, bn);
+
+		//Vector3f n = (B * model->normal(uv)).normalize();
+		//Vector3f l = proj<3>(Projection * ModelView * embed<4>(light_dir, 0.f)).normalize();
+		//float diff = std::max(0.f, n * l);
+		//color = model->diffuse(uv) * diff;
+
+		Vector2f uv = varying_uv * bar;
+		color = model->diffuse(uv);
+		return false;
+	}
+};
+
 struct SpecularShader : public IShader
 {
 	Matrix<2, 3, float> varying_uv;  // triangle uv coordinates, written by the vertex shader, read by the fragment shader
@@ -260,8 +313,12 @@ static vec2_t get_pos_delta(vec2_t old_pos, vec2_t new_pos) {
 static vec2_t get_cursor_pos(window_t* window) {
 	float xpos, ypos;
 	input_query_cursor(window, &xpos, &ypos);
-	//std::cout << "get_cursor_pos" << xpos << "," << ypos << std::endl;
 	return vec2_new(xpos, ypos);
+}
+
+static void scroll_callback(window_t* window, float offset) {
+	record_t* record = (record_t*)window_get_userdata(window);
+	record->dolly_delta += offset;
 }
 
 static void button_callback(window_t* window, button_t button, int pressed) {
@@ -310,7 +367,6 @@ static void update_camera(window_t* window, camera_t* camera,
 		vec2_t pos_delta = get_pos_delta(record->orbit_pos, cursor_pos);
 		record->orbit_delta = vec2_add(record->orbit_delta, pos_delta);
 		record->orbit_pos = cursor_pos;
-		//std::cout << "orbit_delta" << record->orbit_delta.x << "," << record->orbit_delta.y << std::endl;
 	}
 	if (record->is_panning) {
 		vec2_t pos_delta = get_pos_delta(record->pan_pos, cursor_pos);
@@ -359,6 +415,7 @@ int main()
 
 	memset(&callbacks, 0, sizeof(callbacks_t));
 	callbacks.button_callback = button_callback;
+	callbacks.scroll_callback = scroll_callback;
 
 	GouraudShader gouraudShader;
 	ToonShader toonShader;
@@ -366,6 +423,7 @@ int main()
 	NormalmappingShader normalmapping;
 	TangentSpaceNormalmappingShader tangentSpaceNormalmappingShader;
 	SpecularShader specularShader;
+	TestShader testShader;
 
 	window_set_userdata(window, &record);
 	input_set_callbacks(window, callbacks);
@@ -406,7 +464,7 @@ int main()
 
 		Projection = Projection * m3;
 
-		RenderModel("african_head", framebuffer, tangentSpaceNormalmappingShader);
+		RenderModel("african_head", framebuffer, textureShader);
 		window_draw_buffer(window, framebuffer);
 		num_frames += 1;
 		if (curr_time - print_time >= 1) {
@@ -418,8 +476,6 @@ int main()
 		}
 		prev_time = curr_time;
 
-		input_poll_events();
-
 		record.orbit_delta = vec2_new(0, 0);
 		record.pan_delta = vec2_new(0, 0);
 		record.dolly_delta = 0;
@@ -428,6 +484,8 @@ int main()
 
 		framebuffer_clear_color(framebuffer, vec4_t());
 		framebuffer_clear_depth(framebuffer, -std::numeric_limits<float>::max());
+
+		input_poll_events();
 	}
 
 	if (model)
@@ -436,4 +494,6 @@ int main()
 	}
 
 	window_destroy(window);
+	framebuffer_release(framebuffer);
+	camera_release(camera);
 }
