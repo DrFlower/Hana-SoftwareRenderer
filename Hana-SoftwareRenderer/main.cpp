@@ -291,7 +291,7 @@ void RenderModel(std::string modelName, framebuffer_t* framebuffer, IShader& sha
 	{
 		//std::string prefix = "obj";
 		//model = new Model(prefix.append(modelName).append(".obj").c_str());
-		model = new Model("D:\\Development\\Github\\Hana-SoftwareRenderer\\Hana-SoftwareRenderer\\obj\\african_head.obj");
+		model = new Model("D:\\Development\\Github\\Hana-SoftwareRenderer\\Hana-SoftwareRenderer\\obj\\floor.obj");
 	}
 
 

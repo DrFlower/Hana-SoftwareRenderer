@@ -6,6 +6,7 @@
 #include "model.h"
 #include "graphics.h"
 
+extern Matrix4x4 ModelMatrix;
 extern Matrix4x4 ModelView;
 extern Matrix4x4 Viewport;
 extern Matrix4x4 Projection;

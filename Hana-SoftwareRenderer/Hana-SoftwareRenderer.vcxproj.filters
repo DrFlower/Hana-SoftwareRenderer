@@ -19,6 +19,12 @@
     <Filter Include="源文件\math">
       <UniqueIdentifier>{c683e64b-9a0e-4ae1-bf81-fb1876b6b82d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="shaders">
+      <UniqueIdentifier>{fad1a95b-a8a6-4acb-beae-2a472a9dca7c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="material">
+      <UniqueIdentifier>{a85081ab-0abd-40c7-a26e-4bb08da16a65}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -51,6 +57,9 @@
     <ClCompile Include="camera.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="TextureShader.cpp">
+      <Filter>shaders</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="platform.h">
@@ -82,6 +91,9 @@
     </ClInclude>
     <ClInclude Include="camera.h">
       <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="IShader.h">
+      <Filter>shaders</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

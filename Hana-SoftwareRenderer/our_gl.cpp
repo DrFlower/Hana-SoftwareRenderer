@@ -4,6 +4,7 @@
 #include "our_gl.h"
 #include "model.h"
 
+Matrix4x4 ModelMatrix = Matrix4x4::identity();
 Matrix4x4 ModelView;
 Matrix4x4 Viewport;
 Matrix4x4 Projection;
@@ -200,4 +201,4 @@ void triangle(Matrix<4, 3, float>& clip_coords, Model* model, IShader& shader, f
 //		}
 //	}
 //}
-
+//

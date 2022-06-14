@@ -137,6 +137,7 @@
     <ClCompile Include="math.cpp" />
     <ClCompile Include="model.cpp" />
     <ClCompile Include="our_gl.cpp" />
+    <ClCompile Include="TextureShader.cpp" />
     <ClCompile Include="tgaimage.cpp" />
     <ClCompile Include="win32.cpp" />
   </ItemGroup>
@@ -144,6 +145,7 @@
     <ClInclude Include="camera.h" />
     <ClInclude Include="graphics.h" />
     <ClInclude Include="image.h" />
+    <ClInclude Include="IShader.h" />
     <ClInclude Include="macro.h" />
     <ClInclude Include="maths.h" />
     <ClInclude Include="model.h" />
