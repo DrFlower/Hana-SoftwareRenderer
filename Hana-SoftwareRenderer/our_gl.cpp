@@ -50,6 +50,36 @@ bool is_back_facing(Vector3f* ndc_coords) {
 	return signed_area <= 0;
 }
 
+/*
+ * for depth interpolation, see subsection 3.5.1 of
+ * https://www.khronos.org/registry/OpenGL/specs/es/2.0/es_full_spec_2.0.pdf
+ */
+ //float interpolate_depth(float screen_depths[3], vec3_t weights) {
+ //	float depth0 = screen_depths[0] * weights.x;
+ //	float depth1 = screen_depths[1] * weights.y;
+ //	float depth2 = screen_depths[2] * weights.z;
+ //	return depth0 + depth1 + depth2;
+ //}
+
+//float interpolate_depth(Vector3f* screen_coords, Vector3f weights) {
+//	float t = 0;
+//	for (size_t i = 0; i < 3; i++)
+//	{
+//		t += weights[i] / screen_coords[i].z;
+//	}
+//	return (1 / t);
+//}
+
+float interpolate_depth(Vector3f* screen_coords, Vector3f weights) {
+	Vector3f screen_depth;
+	for (size_t i = 0; i < 3; i++)
+	{
+		screen_depth[i] = screen_coords[i].z;
+	}
+
+	return screen_depth * weights;
+}
+
 Vector3f barycentric(Vector2f A, Vector2f B, Vector2f C, Vector2f P) {
 	Vector3f s[2];
 	for (int i = 2; i--; ) {
@@ -66,9 +96,12 @@ Vector3f barycentric(Vector2f A, Vector2f B, Vector2f C, Vector2f P) {
 void triangle(Matrix<4, 3, float>& clip_coords, Model* model, IShader& shader, framebuffer_t* frameBuffer) {
 	Matrix<3, 4, float> pts = (Viewport * clip_coords).transpose(); // transposed to ease access to each of the points
 
-	//Vector3f pts1[3];
-	//for (int i = 0; i < 3; i++) pts1[i] = proj<3>(pts[i] / pts[i][3]);
-	//if (is_back_facing(pts1)) return;
+	Vector3f screen_coords[3];
+	for (int i = 0; i < 3; i++) screen_coords[i] = proj<3>(pts[i]);
+
+	Vector3f pts1[3];
+	for (int i = 0; i < 3; i++) pts1[i] = proj<3>(pts[i] / pts[i][3]);
+	if (is_back_facing(pts1)) return;
 
 	Matrix<3, 2, float> pts2;
 	for (int i = 0; i < 3; i++) pts2[i] = proj<2>(pts[i] / pts[i][3]);
@@ -82,16 +115,22 @@ void triangle(Matrix<4, 3, float>& clip_coords, Model* model, IShader& shader, f
 			bboxmax[j] = std::min(clamp[j], std::max(bboxmax[j], pts2[i][j]));
 		}
 	}
+
 	Vector2i P;
 	TGAColor color;
 	for (P.x = bboxmin.x; P.x <= bboxmax.x; P.x++) {
 		for (P.y = bboxmin.y; P.y <= bboxmax.y; P.y++) {
-			Vector3f bc_screen = barycentric(pts2[0], pts2[1], pts2[2], P);
-			Vector3f bc_clip = Vector3f(bc_screen.x / pts[0][3], bc_screen.y / pts[1][3], bc_screen.z / pts[2][3]);
-			bc_clip = bc_clip / (bc_clip.x + bc_clip.y + bc_clip.z);
-			float frag_depth = clip_coords[2] * bc_clip;
+			Vector3f barycentric_weights = barycentric(pts2[0], pts2[1], pts2[2], P);
+			if (barycentric_weights.x < 0 || barycentric_weights.y < 0 || barycentric_weights.z < 0) continue;
 
-			if (bc_screen.x < 0 || bc_screen.y < 0 || bc_screen.z<0 || frameBuffer->get_depth(P.x, P.y) > frag_depth) continue;
+
+			Vector3f bc_clip = Vector3f(barycentric_weights.x / pts[0][3], barycentric_weights.y / pts[1][3], barycentric_weights.z / pts[2][3]);
+			bc_clip = bc_clip / (bc_clip.x + bc_clip.y + bc_clip.z);
+			//float frag_depth = clip_coords[2] * bc_clip;
+
+			float frag_depth = interpolate_depth(screen_coords, barycentric_weights);
+
+			if (frameBuffer->get_depth(P.x, P.y) > frag_depth) continue;
 			bool discard = shader.fragment(model, bc_clip, color);
 
 			if (!discard) {
