@@ -11,11 +11,12 @@ private:
     std::vector<std::vector<Vector3i> > faces_; // attention, this Vec3i means vertex/uv/normal
     std::vector<Vector3f> norms_;
     std::vector<Vector2f> uv_;
+    void load_texture(std::string filename, const char *suffix, TGAImage &img);
+public:
     TGAImage diffusemap_;
     TGAImage normalmap_;
     TGAImage specularmap_;
-    void load_texture(std::string filename, const char *suffix, TGAImage &img);
-public:
+
     Model(const char *filename);
     ~Model();
     int nverts();

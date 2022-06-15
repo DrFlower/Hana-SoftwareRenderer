@@ -3,11 +3,16 @@
 #include "math.h"
 #include "tgaimage.h"
 #include "model.h"
+#include "color.h"
 
-struct shader_env
-{
-	Vector3f world_ligt_dir;
-	TGAColor ambient;
+struct MaterialProperty {
+	TGAImage diffuse_map;
+	TGAImage normal_map;
+	TGAImage specular_map;
+	Color color;
+	Vector4f specular;
+	float gloss;
+	float bump_scale;
 };
 
 struct shader_struct_a2v
@@ -25,18 +30,40 @@ struct shader_struct_v2f
 	Vector2f uv;
 };
 
-class IShader2 {
-private:
-	Model* model;
-public:
-	IShader2(Model* model) :model(model) {}
+struct IShader2 {
+	MaterialProperty material_property;
+	IShader2(MaterialProperty mp) :material_property(mp) {};
 
-	virtual shader_struct_v2f vertex(const shader_struct_a2v& a2v, const shader_env&) = 0;
-	virtual bool fragment(const shader_struct_v2f& v2f, const shader_env&, TGAColor& color) = 0;
-protected:
-	TGAColor tex2d(Vector2f uv)
-	{
-		return model->diffuse(uv);
-	}
+	virtual shader_struct_v2f vertex(const shader_struct_a2v& a2v) = 0;
+	virtual bool fragment(const shader_struct_v2f& v2f, Color& color) = 0;
 };
 
+
+struct Matrial {
+	IShader2* shader;
+	MaterialProperty material_property;
+};
+
+struct AppData {
+	Model* model;
+	Matrial* matrial;
+};
+
+static Color tex_diffuse(TGAImage tex, Vector2f uv) {
+	Vector2i _uv(uv[0] * tex.get_width(), uv[1] * tex.get_height());
+	return (Color)(tex.get(_uv[0], _uv[1]));
+}
+
+static Vector3f tex_normal(TGAImage tex, Vector2f uv) {
+	Vector2i _uv(uv[0] * tex.get_width(), uv[1] * tex.get_height());
+	TGAColor c = tex.get(_uv[0], _uv[1]);
+	Vector3f res;
+	for (int i = 0; i < 3; i++)
+		res[2 - i] = (float)c[i] / 255.f * 2.f - 1.f;
+	return res;
+}
+
+static float tex_specular(TGAImage tex, Vector2f uv) {
+	Vector2i _uv(uv[0] * tex.get_width(), uv[1] * tex.get_height());
+	return tex.get(_uv[0], _uv[1])[0] / 1.f;
+}

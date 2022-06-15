@@ -289,7 +289,7 @@ static void present_surface(window_t *window) {
     ReleaseDC(window->handle, window_dc);
 }
 
-void window_draw_buffer(window_t *window, framebuffer_t *buffer) {
+void window_draw_buffer(window_t *window, framebuffer *buffer) {
     //Hana Begin
     //private_blit_bgr(buffer, window->surface);
     //Hana End

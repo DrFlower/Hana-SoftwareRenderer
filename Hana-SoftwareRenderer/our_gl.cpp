@@ -3,11 +3,14 @@
 #include <cstdlib>
 #include "our_gl.h"
 #include "model.h"
+#include "IShader.h"
 
 Matrix4x4 ModelMatrix = Matrix4x4::identity();
 Matrix4x4 ModelView;
 Matrix4x4 Viewport;
 Matrix4x4 Projection;
+
+Vector3f light_dir = Vector3f(1, 1, 1);
 
 IShader::~IShader() {}
 
@@ -94,7 +97,7 @@ Vector3f barycentric(Vector2f A, Vector2f B, Vector2f C, Vector2f P) {
 	return Vector3f(-1, 1, 1); // in this case generate negative coordinates, it will be thrown away by the rasterizator
 }
 
-void triangle(Matrix<4, 3, float>& clip_coords, Model* model, IShader& shader, framebuffer_t* frameBuffer) {
+void triangle(Matrix<4, 3, float>& clip_coords, Model* model, IShader& shader, framebuffer* frameBuffer) {
 	Matrix<3, 4, float> pts = (Viewport * clip_coords).transpose(); // transposed to ease access to each of the points
 
 	Vector3f screen_coords[3];
@@ -202,3 +205,51 @@ void triangle(Matrix<4, 3, float>& clip_coords, Model* model, IShader& shader, f
 //	}
 //}
 //
+
+//void triangle(Matrix<4, 3, float>& clip_coords, Model* model, IShader2& shader, framebuffer_t* frameBuffer) {
+//	Matrix<3, 4, float> pts = (Viewport * clip_coords).transpose(); // transposed to ease access to each of the points
+//
+//	Vector3f screen_coords[3];
+//	for (int i = 0; i < 3; i++) screen_coords[i] = proj<3>(pts[i]);
+//
+//	Vector3f pts1[3];
+//	for (int i = 0; i < 3; i++) pts1[i] = proj<3>(pts[i] / pts[i][3]);
+//	if (is_back_facing(pts1)) return;
+//
+//	Matrix<3, 2, float> pts2;
+//	for (int i = 0; i < 3; i++) pts2[i] = proj<2>(pts[i] / pts[i][3]);
+//
+//	Vector2f bboxmin(std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
+//	Vector2f bboxmax(-std::numeric_limits<float>::max(), -std::numeric_limits<float>::max());
+//	Vector2f clamp(frameBuffer->width - 1, frameBuffer->height - 1);
+//	for (int i = 0; i < 3; i++) {
+//		for (int j = 0; j < 2; j++) {
+//			bboxmin[j] = std::max(0.f, std::min(bboxmin[j], pts2[i][j]));
+//			bboxmax[j] = std::min(clamp[j], std::max(bboxmax[j], pts2[i][j]));
+//		}
+//	}
+//
+//	Vector2i P;
+//	TGAColor color;
+//	for (P.x = bboxmin.x; P.x <= bboxmax.x; P.x++) {
+//		for (P.y = bboxmin.y; P.y <= bboxmax.y; P.y++) {
+//			Vector3f barycentric_weights = barycentric(pts2[0], pts2[1], pts2[2], P);
+//			if (barycentric_weights.x < 0 || barycentric_weights.y < 0 || barycentric_weights.z < 0) continue;
+//
+//
+//			Vector3f bc_clip = Vector3f(barycentric_weights.x / pts[0][3], barycentric_weights.y / pts[1][3], barycentric_weights.z / pts[2][3]);
+//			bc_clip = bc_clip / (bc_clip.x + bc_clip.y + bc_clip.z);
+//			//float frag_depth = clip_coords[2] * bc_clip;
+//
+//			float frag_depth = interpolate_depth(screen_coords, barycentric_weights);
+//
+//			if (frameBuffer->get_depth(P.x, P.y) > frag_depth) continue;
+//			bool discard = shader.fragment(model, bc_clip, color);
+//
+//			if (!discard) {
+//				frameBuffer->set_depth(P.x, P.y, frag_depth);
+//				frameBuffer->set_color(P.x, P.y, color);
+//			}
+//		}
+//	}
+//}

@@ -8,44 +8,16 @@
 #include "platform.h"
 #include "math.h"
 #include "camera.h"
+#include "input.h"
+#include "IShader.h"
 
 static const char* const WINDOW_TITLE = "Hana-SoftwareRenderer";
 static const int WINDOW_WIDTH = 800;
 static const int WINDOW_HEIGHT = 600;
 
-static const vec3_t CAMERA_POSITION = { 0, 0, 1.5f };
-static const vec3_t CAMERA_TARGET = { 0, 0, 0 };
-
-static const float CLICK_DELAY = 0.25f;
-
-class record_t {
-public:
-	/* orbit */
-	int is_orbiting;
-	vec2_t orbit_pos;
-	vec2_t orbit_delta;
-	/* pan */
-	int is_panning;
-	vec2_t pan_pos;
-	vec2_t pan_delta;
-	/* zoom */
-	float dolly_delta;
-	/* light */
-	float light_theta;
-	float light_phi;
-	/* click */
-	float press_time;
-	float release_time;
-	vec2_t press_pos;
-	vec2_t release_pos;
-	int single_click;
-	int double_click;
-	vec2_t click_pos;
-};
-
 Model* model = NULL;
 
-Vector3f light_dir(1, 1, 1);
+
 //Vector3f       eye(1, 1, 3);
 //Vector3f    center(0, 0, 0);
 //Vector3f        up(0, 1, 0);
@@ -201,7 +173,7 @@ struct TestShader : public IShader
 
 		Vector3f worldPos = model->vert(iface, nthvert);
 		Vector3f worldNormal = model->normal(iface, nthvert);
-	
+
 
 		return gl_Vertex;
 	}
@@ -285,13 +257,13 @@ struct SpecularShader : public IShader
 	}
 };
 
-void RenderModel(std::string modelName, framebuffer_t* framebuffer, IShader& shader)
+void RenderModel(std::string modelName, framebuffer* framebuffer, IShader& shader)
 {
 	if (!model)
 	{
 		//std::string prefix = "obj";
 		//model = new Model(prefix.append(modelName).append(".obj").c_str());
-		model = new Model("D:\\Development\\Github\\Hana-SoftwareRenderer\\Hana-SoftwareRenderer\\obj\\floor.obj");
+		model = new Model("D:\\Development\\Github\\Hana-SoftwareRenderer\\Hana-SoftwareRenderer\\obj\\african_head.obj");
 	}
 
 
@@ -303,93 +275,28 @@ void RenderModel(std::string modelName, framebuffer_t* framebuffer, IShader& sha
 	}
 }
 
+//void RenderModel(Model* model, framebuffer_t* framebuffer, IShader2& shader)
+//{
+//	for (int i = 0; i < model->nfaces(); i++) {
+//
+//		for (int j = 0; j < 3; j++) {
+//			shader_struct_a2v a2v;
+//			a2v.obj_pos = model->vert(i, j);
+//			a2v.obj_normal = model->normal(i, j);
+//			a2v.uv = model->uv(i, j);
+//			shader_struct_v2f v2f = shader.vertex(a2v);
+//		}
+//		triangle(shader.varying_tri, model, shader, framebuffer);
+//	}
+//}
 
 
-static vec2_t get_pos_delta(vec2_t old_pos, vec2_t new_pos) {
-	vec2_t delta = vec2_sub(new_pos, old_pos);
-	return vec2_div(delta, (float)WINDOW_HEIGHT);
-}
-
-static vec2_t get_cursor_pos(window_t* window) {
-	float xpos, ypos;
-	input_query_cursor(window, &xpos, &ypos);
-	return vec2_new(xpos, ypos);
-}
-
-static void scroll_callback(window_t* window, float offset) {
-	record_t* record = (record_t*)window_get_userdata(window);
-	record->dolly_delta += offset;
-}
-
-static void button_callback(window_t* window, button_t button, int pressed) {
-	record_t* record = (record_t*)window_get_userdata(window);
-	vec2_t cursor_pos = get_cursor_pos(window);
-	if (button == BUTTON_L) {
-		float curr_time = platform_get_time();
-		if (pressed) {
-			record->is_orbiting = 1;
-			record->orbit_pos = cursor_pos;
-			record->press_time = curr_time;
-			record->press_pos = cursor_pos;
-		}
-		else {
-			float prev_time = record->release_time;
-			vec2_t pos_delta = get_pos_delta(record->orbit_pos, cursor_pos);
-			record->is_orbiting = 0;
-			record->orbit_delta = vec2_add(record->orbit_delta, pos_delta);
-			if (prev_time && curr_time - prev_time < CLICK_DELAY) {
-				record->double_click = 1;
-				record->release_time = 0;
-			}
-			else {
-				record->release_time = curr_time;
-				record->release_pos = cursor_pos;
-			}
-		}
-	}
-	else if (button == BUTTON_R) {
-		if (pressed) {
-			record->is_panning = 1;
-			record->pan_pos = cursor_pos;
-		}
-		else {
-			vec2_t pos_delta = get_pos_delta(record->pan_pos, cursor_pos);
-			record->is_panning = 0;
-			record->pan_delta = vec2_add(record->pan_delta, pos_delta);
-		}
-	}
-}
-
-static void update_camera(window_t* window, camera_t* camera,
-	record_t* record) {
-	vec2_t cursor_pos = get_cursor_pos(window);
-	if (record->is_orbiting) {
-		vec2_t pos_delta = get_pos_delta(record->orbit_pos, cursor_pos);
-		record->orbit_delta = vec2_add(record->orbit_delta, pos_delta);
-		record->orbit_pos = cursor_pos;
-	}
-	if (record->is_panning) {
-		vec2_t pos_delta = get_pos_delta(record->pan_pos, cursor_pos);
-		record->pan_delta = vec2_add(record->pan_delta, pos_delta);
-		record->pan_pos = cursor_pos;
-	}
-	if (input_key_pressed(window, KEY_SPACE)) {
-		camera_set_transform(camera, CAMERA_POSITION, CAMERA_TARGET);
-	}
-	else {
-		motion_t motion;
-		motion.orbit = record->orbit_delta;
-		motion.pan = record->pan_delta;
-		motion.dolly = record->dolly_delta;
-		camera_update_transform(camera, motion);
-	}
-}
 
 int main()
 {
 	platform_initialize();
 	window_t* window;
-	framebuffer_t* framebuffer;
+	framebuffer* framebuffer;
 	camera_t* camera;
 	record_t record;
 	callbacks_t callbacks;
@@ -436,33 +343,17 @@ int main()
 		float delta_time = curr_time - prev_time;
 
 		update_camera(window, camera, &record);
-		ModelView = Matrix4x4::identity();
-		mat4_t _mv = camera_get_view_matrix(camera);
-		for (size_t i = 0; i < 4; i++)
-		{
-			for (size_t j = 0; j < 4; j++)
-			{
-				ModelView[i][j] = _mv.m[i][j];
-			}
-		}
+		ModelView = camera_get_view_matrix(camera);
 
-		mat4_t _mv2 = camera_get_proj_matrix(camera);
 		Projection = Matrix4x4::identity();
 
-		Matrix4x4 m3 = Matrix4x4::identity();
-		m3[0][0] = -1;
-		m3[1][1] = -1;
-		m3[2][2] = -1;
-		m3[3][3] = -1;
-		for (size_t i = 0; i < 4; i++)
-		{
-			for (size_t j = 0; j < 4; j++)
-			{
-				Projection[i][j] = _mv2.m[i][j];
-			}
-		}
+		Matrix4x4 m = Matrix4x4::identity();
+		m[0][0] = -1;
+		m[1][1] = -1;
+		m[2][2] = -1;
+		m[3][3] = -1;
 
-		Projection = Projection * m3;
+		Projection = camera_get_proj_matrix(camera) * m;
 
 		RenderModel("african_head", framebuffer, textureShader);
 		window_draw_buffer(window, framebuffer);
@@ -476,8 +367,8 @@ int main()
 		}
 		prev_time = curr_time;
 
-		record.orbit_delta = vec2_new(0, 0);
-		record.pan_delta = vec2_new(0, 0);
+		record.orbit_delta = Vector2f(0, 0);
+		record.pan_delta = Vector2f(0, 0);
 		record.dolly_delta = 0;
 		record.single_click = 0;
 		record.double_click = 0;

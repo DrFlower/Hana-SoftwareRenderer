@@ -130,8 +130,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="camera.cpp" />
+    <ClCompile Include="color.cpp" />
     <ClCompile Include="graphics.cpp" />
     <ClCompile Include="image.cpp" />
+    <ClCompile Include="input.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="maths.cpp" />
     <ClCompile Include="math.cpp" />
@@ -143,8 +145,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="camera.h" />
+    <ClInclude Include="color.h" />
     <ClInclude Include="graphics.h" />
     <ClInclude Include="image.h" />
+    <ClInclude Include="input.h" />
     <ClInclude Include="IShader.h" />
     <ClInclude Include="macro.h" />
     <ClInclude Include="maths.h" />
