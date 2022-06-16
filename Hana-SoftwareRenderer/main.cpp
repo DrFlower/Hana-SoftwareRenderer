@@ -3,7 +3,7 @@
 #include "tgaimage.h"
 #include "model.h"
 #include "our_gl.h"
-
+#include "graphics.h"
 #include "iostream"
 #include "platform.h"
 #include "math.h"
@@ -257,40 +257,47 @@ struct SpecularShader : public IShader
 	}
 };
 
-void RenderModel(std::string modelName, framebuffer* framebuffer, IShader& shader)
-{
-	if (!model)
-	{
-		//std::string prefix = "obj";
-		//model = new Model(prefix.append(modelName).append(".obj").c_str());
-		model = new Model("D:\\Development\\Github\\Hana-SoftwareRenderer\\Hana-SoftwareRenderer\\obj\\african_head.obj");
-	}
-
-
-	for (int i = 0; i < model->nfaces(); i++) {
-		for (int j = 0; j < 3; j++) {
-			shader.vertex(model, i, j);
-		}
-		triangle(shader.varying_tri, model, shader, framebuffer);
-	}
-}
-
-//void RenderModel(Model* model, framebuffer_t* framebuffer, IShader2& shader)
+//void RenderModel(std::string modelName, framebuffer* framebuffer, IShader& shader)
 //{
-//	for (int i = 0; i < model->nfaces(); i++) {
+//	if (!model)
+//	{
+//		//std::string prefix = "obj";
+//		//model = new Model(prefix.append(modelName).append(".obj").c_str());
+//		model = new Model("D:\\Development\\Github\\Hana-SoftwareRenderer\\Hana-SoftwareRenderer\\obj\\african_head.obj");
+//	}
 //
+//
+//	for (int i = 0; i < model->nfaces(); i++) {
 //		for (int j = 0; j < 3; j++) {
-//			shader_struct_a2v a2v;
-//			a2v.obj_pos = model->vert(i, j);
-//			a2v.obj_normal = model->normal(i, j);
-//			a2v.uv = model->uv(i, j);
-//			shader_struct_v2f v2f = shader.vertex(a2v);
+//			shader.vertex(model, i, j);
 //		}
 //		triangle(shader.varying_tri, model, shader, framebuffer);
 //	}
 //}
 
+struct TextureShader2 : public IShader2
+{
+	TextureShader2(MaterialProperty mp) :IShader2(mp) {};
 
+	// Í¨¹ý IShader ¼Ì³Ð
+	virtual shader_struct_v2f vertex(const shader_struct_a2v& a2v) override {
+		shader_struct_v2f v2f;
+		v2f.clip_pos = Projection * ModelView * embed<4>(a2v.obj_pos);
+		v2f.world_pos = proj<3>(ModelMatrix * embed<4>(a2v.obj_pos));
+		Matrix<1, 4, float> m_objPos;
+		m_objPos[0] = embed<4>(a2v.obj_pos);
+		v2f.world_normal = proj<3>((m_objPos * ModelMatrix.invert())[0]);
+		v2f.uv = a2v.uv;
+		return v2f;
+	}
+
+	virtual bool fragment(const shader_struct_v2f& v2f, Color& color) override {
+		//float intensity = std::max(0.f, v2f.world_normal * light_dir);
+		float intensity = 1;
+		color = tex_diffuse(material_property.diffuse_map, v2f.uv) * intensity;
+		return false;
+	}
+};
 
 int main()
 {
@@ -332,6 +339,23 @@ int main()
 	SpecularShader specularShader;
 	TestShader testShader;
 
+
+	model = new Model("D:\\Development\\Github\\Hana-SoftwareRenderer\\Hana-SoftwareRenderer\\obj\\african_head.obj");
+
+	MaterialProperty mp;
+	mp.diffuse_map = model->diffusemap_;
+	mp.normal_map = model->normalmap_;
+	mp.specular_map = model->specularmap_;
+	mp.color = Color(1, 1, 1, 1);
+	mp.specular = Color(1, 1, 1, 1);
+	mp.gloss = 1;
+	mp.bump_scale = 1;
+
+	TextureShader2 shader = TextureShader2(mp);
+
+	Matrial* material = new Matrial(&shader, mp);
+	AppData* appdata = new AppData(model, material);
+
 	window_set_userdata(window, &record);
 	input_set_callbacks(window, callbacks);
 
@@ -355,7 +379,10 @@ int main()
 
 		Projection = camera_get_proj_matrix(camera) * m;
 
-		RenderModel("african_head", framebuffer, textureShader);
+		//RenderModel("african_head", framebuffer, textureShader);
+
+		graphics_draw_triangle(framebuffer, appdata);
+
 		window_draw_buffer(window, framebuffer);
 		num_frames += 1;
 		if (curr_time - print_time >= 1) {
@@ -383,6 +410,9 @@ int main()
 	{
 		delete model;
 	}
+
+	delete material;
+	delete appdata;
 
 	window_destroy(window);
 	framebuffer_release(framebuffer);

@@ -4,13 +4,14 @@
 #include "tgaimage.h"
 #include "model.h"
 #include "color.h"
+#include "our_gl.h"
 
 struct MaterialProperty {
 	TGAImage diffuse_map;
 	TGAImage normal_map;
 	TGAImage specular_map;
 	Color color;
-	Vector4f specular;
+	Color specular;
 	float gloss;
 	float bump_scale;
 };
@@ -24,7 +25,7 @@ struct shader_struct_a2v
 
 struct shader_struct_v2f
 {
-	Vector3f clip_pos;
+	Vector4f clip_pos;
 	Vector3f world_pos;
 	Vector3f world_normal;
 	Vector2f uv;
@@ -39,12 +40,16 @@ struct IShader2 {
 };
 
 
-struct Matrial {
+class Matrial {
+public:
+	Matrial(IShader2* shader, MaterialProperty mp) :shader(shader), material_property(mp) {}
 	IShader2* shader;
 	MaterialProperty material_property;
 };
 
-struct AppData {
+class AppData {
+public:
+	AppData(Model* model, Matrial* matrial) :model(model), matrial(matrial) {}
 	Model* model;
 	Matrial* matrial;
 };

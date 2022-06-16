@@ -24,12 +24,12 @@ public:
 		return depth_buffer[index];
 	}
 
-	void set_color(int x, int y, TGAColor color)
+	void set_color(int x, int y, Color color)
 	{
 		int index = y * width + x;
-		color_buffer[index * 4 + 0] = color.bgra[2];
-		color_buffer[index * 4 + 1] = color.bgra[1];
-		color_buffer[index * 4 + 2] = color.bgra[0];
+		color_buffer[index * 4 + 0] = color.r;
+		color_buffer[index * 4 + 1] = color.g;
+		color_buffer[index * 4 + 2] = color.b;
 	}
 };
 
@@ -40,5 +40,5 @@ void framebuffer_clear_color(framebuffer* framebuffer, vec4_t color);
 void framebuffer_clear_depth(framebuffer* framebuffer, float depth);
 
 
-
+void graphics_draw_triangle(framebuffer* framebuffer, AppData* appdata);
 #endif
