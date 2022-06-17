@@ -18,16 +18,16 @@ struct MaterialProperty {
 struct shader_struct_a2v
 {
 	Vector3f obj_pos;
-	//Vector3f obj_normal;
-	//Vector2f uv;
+	Vector3f obj_normal;
+	Vector2f uv;
 };
 
 struct shader_struct_v2f
 {
 	Vector4f clip_pos;
-	//Vector3f world_pos;
-	//Vector3f world_normal;
-	//Vector2f uv;
+	Vector3f world_pos;
+	Vector3f world_normal;
+	Vector2f uv;
 };
 
 struct IShader2 {
