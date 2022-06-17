@@ -109,3 +109,14 @@ Vector3f Model::normal(int iface, int nthvert) {
 	return norms_[idx].normalize();
 }
 
+TGAImage* Model::get_diffuse_map() {
+	return &diffusemap_;
+}
+
+TGAImage* Model::get_normal_map() {
+	return &normalmap_;
+}
+TGAImage* Model::get_specular_map() {
+	return &specularmap_;
+}
+

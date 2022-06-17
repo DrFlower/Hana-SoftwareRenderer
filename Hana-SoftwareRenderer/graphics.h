@@ -26,10 +26,10 @@ public:
 
 	void set_color(int x, int y, Color color)
 	{
-		int index = y * width + x;
-		color_buffer[index * 4 + 0] = color.r;
-		color_buffer[index * 4 + 1] = color.g;
-		color_buffer[index * 4 + 2] = color.b;
+		int index = (y * width + x) * 4;
+		color_buffer[index + 0] = color.r;
+		color_buffer[index + 1] = color.g;
+		color_buffer[index + 2] = color.b;
 	}
 };
 

@@ -3,7 +3,6 @@
 #include <cstdlib>
 #include "our_gl.h"
 #include "model.h"
-#include "IShader.h"
 
 Matrix4x4 ModelMatrix = Matrix4x4::identity();
 Matrix4x4 ModelView;

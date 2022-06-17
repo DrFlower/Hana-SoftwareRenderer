@@ -106,8 +106,8 @@ static void rasterize_triangle(framebuffer* framebuffer, AppData* appdata, shade
 
 
 	Matrix<3, 2, float> pts2;
-	//for (int i = 0; i < 3; i++) pts2[i] = proj<2>(screen_coords[i] / screen_coords[i][2]);
-	for (int i = 0; i < 3; i++) pts2[i] = proj<2>(screen_coords[i]);
+	for (int i = 0; i < 3; i++) pts2[i] = proj<2>(m_screen_coords[i] / m_screen_coords[i][3]);
+	//for (int i = 0; i < 3; i++) pts2[i] = proj<2>(screen_coords[i]);
 
 	Vector2f bboxmin(std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
 	Vector2f bboxmax(-std::numeric_limits<float>::max(), -std::numeric_limits<float>::max());
@@ -120,29 +120,41 @@ static void rasterize_triangle(framebuffer* framebuffer, AppData* appdata, shade
 	}
 
 	Vector2i P;
+	shader_struct_v2f interpolate_v2f;
+	Matrix<4, 3, float> varying_clip_pos;
 	for (P.x = bboxmin.x; P.x <= bboxmax.x; P.x++) {
 		for (P.y = bboxmin.y; P.y <= bboxmax.y; P.y++) {
 			Vector3f barycentric_weights = barycentric(pts2[0], pts2[1], pts2[2], P);
 			if (barycentric_weights.x < 0 || barycentric_weights.y < 0 || barycentric_weights.z < 0) continue;
 
 
-			Vector3f bc_clip = Vector3f(barycentric_weights.x / screen_coords[0][3], barycentric_weights.y / screen_coords[1][3], barycentric_weights.z / screen_coords[2][3]);
+			Vector3f bc_clip = Vector3f(barycentric_weights.x / m_screen_coords[0][3], barycentric_weights.y / m_screen_coords[1][3], barycentric_weights.z / m_screen_coords[2][3]);
 			bc_clip = bc_clip / (bc_clip.x + bc_clip.y + bc_clip.z);
 			//float frag_depth = clip_coords[2] * bc_clip;
 
 			float frag_depth = interpolate_depth(screen_coords, barycentric_weights);
 
-			Matrix<4, 3, float> varying_clip_pos, varying_world_pos, varying_clip_uv, varying_clip_normal;
-			for (int i = 0; i < 3; i++) { varying_clip_pos.setCol(i, v2f[i].clip_pos); }
-			for (int i = 0; i < 3; i++) { varying_world_pos.setCol(i, embed<4>(v2f[i].world_pos)); }
-			for (int i = 0; i < 3; i++) { varying_clip_uv.setCol(i, embed<4>(v2f[i].uv)); }
-			for (int i = 0; i < 3; i++) { varying_clip_normal.setCol(i, embed<4>(v2f[i].world_normal)); }
+			//Matrix<4, 3, float> varying_clip_pos, varying_world_pos, varying_clip_uv, varying_clip_normal;
+			//for (int i = 0; i < 3; i++) { varying_clip_pos.setCol(i, v2f[i].clip_pos); }
+			//for (int i = 0; i < 3; i++) { varying_world_pos.setCol(i, embed<4>(v2f[i].world_pos)); }
+			//for (int i = 0; i < 3; i++) { varying_clip_uv.setCol(i, embed<4>(v2f[i].uv)); }
+			//for (int i = 0; i < 3; i++) { varying_clip_normal.setCol(i, embed<4>(v2f[i].world_normal)); }
 
-			shader_struct_v2f interpolate_v2f;
+
+			//interpolate_v2f.clip_pos = varying_clip_pos * bc_clip;
+			//interpolate_v2f.world_pos = proj<3>(varying_world_pos * bc_clip);
+			//interpolate_v2f.uv = proj<2>(varying_clip_uv * bc_clip);
+			//interpolate_v2f.world_normal = proj<3>(varying_clip_normal * bc_clip);
+
+			
+			for (int i = 0; i < 3; i++) { varying_clip_pos.setCol(i, v2f[i].clip_pos); }
 			interpolate_v2f.clip_pos = varying_clip_pos * bc_clip;
-			interpolate_v2f.world_pos = proj<3>(varying_world_pos * bc_clip);
-			interpolate_v2f.uv = proj<2>(varying_clip_uv * bc_clip);
-			interpolate_v2f.world_normal = proj<3>(varying_clip_normal * bc_clip);
+
+			/*		shader_struct_v2f interpolate_v2f;
+					interpolate_v2f.clip_pos = v2f->clip_pos;
+					interpolate_v2f.world_pos = v2f->world_pos;
+					interpolate_v2f.uv = v2f->uv;
+					interpolate_v2f.world_normal = v2f->world_normal;*/
 
 			if (framebuffer->get_depth(P.x, P.y) > frag_depth) continue;
 			Color color;
@@ -157,15 +169,13 @@ static void rasterize_triangle(framebuffer* framebuffer, AppData* appdata, shade
 }
 
 void graphics_draw_triangle(framebuffer* framebuffer, AppData* appdata) {
-
+	shader_struct_v2f v2fs[3];
 	for (int i = 0; i < appdata->model->nfaces(); i++) {
-		shader_struct_v2f v2fs[3];
 		for (int j = 0; j < 3; j++) {
 			shader_struct_a2v a2v;
 			a2v.obj_pos = appdata->model->vert(i, j);
-			a2v.obj_normal = appdata->model->normal(i, j);
-			a2v.uv = appdata->model->uv(i, j);
-
+			//a2v.obj_normal = appdata->model->normal(i, j);
+			//a2v.uv = appdata->model->uv(i, j);
 			v2fs[j] = appdata->matrial->shader->vertex(a2v);
 		}
 
