@@ -145,7 +145,7 @@ static Vector3f barycentric(Vector2f A, Vector2f B, Vector2f C, Vector2f P) {
 	return Vector3f(-1, 1, 1); // in this case generate negative coordinates, it will be thrown away by the rasterizator
 }
 
-static void rasterize_triangle(framebuffer* framebuffer, AppData* appdata, shader_struct_v2f* v2f) {
+static void rasterize_triangle(framebuffer* framebuffer, DrawData* appdata, shader_struct_v2f* v2f) {
 
 	// 齐次除法 / 透视除法 (homogeneous division / perspective division)
 	Vector3f ndc_coords[3];
@@ -213,7 +213,7 @@ static void rasterize_triangle(framebuffer* framebuffer, AppData* appdata, shade
 	}
 }
 
-void graphics_draw_triangle(framebuffer* framebuffer, AppData* appdata) {
+void graphics_draw_triangle(framebuffer* framebuffer, DrawData* appdata) {
 	shader_struct_v2f v2fs[3];
 	for (int i = 0; i < appdata->model->nfaces(); i++) {
 		for (int j = 0; j < 3; j++) {

@@ -272,17 +272,21 @@ int main()
 	mp.specular_map = model->get_specular_map();
 	mp.color = Color::White;
 	mp.specular = Color::White;
-	mp.gloss = 1;
+	mp.gloss = 30;
 	mp.bump_scale = 1;
 
-	GroundShader ground_shader = GroundShader(&mp);
-	ToonShader toon_shader = ToonShader(&mp);
-	TextureShader texture_shader = TextureShader(&mp);
-	TextureWithLightShader text_with_light_shader = TextureWithLightShader(&mp);
-	BlinnShader blinn_shader = BlinnShader(&mp);
+	DrawData* draw_data = new DrawData();
+
+	GroundShader ground_shader = GroundShader(draw_data);
+	ToonShader toon_shader = ToonShader(draw_data);
+	TextureShader texture_shader = TextureShader(draw_data);
+	TextureWithLightShader text_with_light_shader = TextureWithLightShader(draw_data);
+	BlinnShader blinn_shader = BlinnShader(draw_data);
 
 	Matrial* material = new Matrial(&blinn_shader, &mp);
-	AppData* appdata = new AppData(model, material, camera);
+	draw_data->camera = camera;
+	draw_data->matrial = material;
+	draw_data->model = model;
 
 	window_set_userdata(window, &record);
 	input_set_callbacks(window, callbacks);
@@ -309,7 +313,7 @@ int main()
 
 		//RenderModel("african_head", framebuffer, toonShader);
 
-		graphics_draw_triangle(framebuffer, appdata);
+		graphics_draw_triangle(framebuffer, draw_data);
 
 		window_draw_buffer(window, framebuffer);
 		num_frames += 1;
@@ -340,7 +344,7 @@ int main()
 	}
 
 	delete material;
-	delete appdata;
+	delete draw_data;
 
 	window_destroy(window);
 	framebuffer_release(framebuffer);

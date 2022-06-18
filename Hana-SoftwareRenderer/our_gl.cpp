@@ -11,8 +11,8 @@ Matrix4x4 Projection;
 
 Vector3f light_dir = Vector3f(1, 1, 1);
 //extern Color AMBIENT = Color(50, 50, 50);
-extern Color AMBIENT = Color::White * 0.3f;
-extern Color LightColor = Color::White * 0.8f;
+extern Color AMBIENT = Color(54.f / 255, 58.f / 255, 66.f / 255);
+extern Color LightColor = Color(255.f / 255, 244.f / 255, 214.f / 255);
 
 IShader_old::~IShader_old() {}
 

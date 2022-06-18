@@ -32,9 +32,20 @@ struct shader_struct_v2f
 	float intensity;
 };
 
+class Matrial;
+
+class DrawData {
+public:
+	DrawData() {};
+	DrawData(Model* model, Matrial* matrial, camera_t* camera) :model(model), matrial(matrial), camera(camera) {}
+	Model* model;
+	Matrial* matrial;
+	camera_t* camera;
+};
+
 struct IShader {
-	MaterialProperty* material_property;
-	IShader(MaterialProperty* mp) :material_property(mp) {};
+	DrawData* draw_data;
+	IShader(DrawData* dd) :draw_data(dd) {};
 
 	virtual shader_struct_v2f vertex(shader_struct_a2v* a2v) = 0;
 	virtual bool fragment(shader_struct_v2f* v2f, Color& color) = 0;
@@ -48,13 +59,7 @@ public:
 	MaterialProperty* material_property;
 };
 
-class AppData {
-public:
-	AppData(Model* model, Matrial* matrial, camera_t* camera) :model(model), matrial(matrial), camera(camera) {}
-	Model* model;
-	Matrial* matrial;
-	camera_t* camera;
-};
+
 
 static Color tex_diffuse(TGAImage* tex, const Vector2f& uv) {
 	Vector2i _uv(uv[0] * tex->get_width(), uv[1] * tex->get_height());
@@ -75,37 +80,44 @@ static float tex_specular(TGAImage* tex, const Vector2f& uv) {
 	return tex->get(_uv[0], _uv[1])[0] / 1.f;
 }
 
-struct GroundShader : public IShader
-{
-	GroundShader(MaterialProperty* mp);
+static float saturate(float value){
+	return value > 1 ? 1 : value < 0 ? 0 : value;
+}
+
+static Vector3f get_camera_pos(camera_t* camera){
+	return camera_get_position(camera);
+}
+
+//static Vector3f get_world_light_dir() {
+//	return light_dir.normalize();
+//}
+
+struct GroundShader : public IShader{
+	GroundShader(DrawData* dd);
 	virtual shader_struct_v2f vertex(shader_struct_a2v* a2v) override;
 	virtual bool fragment(shader_struct_v2f* v2f, Color& color) override;
 };
 
-struct ToonShader : public IShader
-{
-	ToonShader(MaterialProperty* mp);
+struct ToonShader : public IShader{
+	ToonShader(DrawData* dd);
 	virtual shader_struct_v2f vertex(shader_struct_a2v* a2v) override;
 	virtual bool fragment(shader_struct_v2f* v2f, Color& color) override;
 };
 
-struct TextureShader : public IShader
-{
-	TextureShader(MaterialProperty* mp);
+struct TextureShader : public IShader{
+	TextureShader(DrawData* dd);
 	virtual shader_struct_v2f vertex(shader_struct_a2v* a2v) override;
 	virtual bool fragment(shader_struct_v2f* v2f, Color& color) override;
 };
 
-struct TextureWithLightShader : public IShader
-{
-	TextureWithLightShader(MaterialProperty* mp);
+struct TextureWithLightShader : public IShader{
+	TextureWithLightShader(DrawData* dd);
 	virtual shader_struct_v2f vertex(shader_struct_a2v* a2v) override;
 	virtual bool fragment(shader_struct_v2f* v2f, Color& color) override;
 };
 
-struct BlinnShader : public IShader
-{
-	BlinnShader(MaterialProperty* mp);
+struct BlinnShader : public IShader{
+	BlinnShader(DrawData* dd);
 	virtual shader_struct_v2f vertex(shader_struct_a2v* a2v) override;
 	virtual bool fragment(shader_struct_v2f* v2f, Color& color) override;
 };

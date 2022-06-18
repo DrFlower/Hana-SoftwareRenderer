@@ -3,12 +3,12 @@
 
 //¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý GroundShader ¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý
 
-GroundShader::GroundShader(MaterialProperty* mp) :IShader(mp) {};
+GroundShader::GroundShader(DrawData* dd) :IShader(dd) {};
 
 shader_struct_v2f GroundShader::vertex(shader_struct_a2v* a2v) {
 	shader_struct_v2f v2f;
 	v2f.clip_pos = Projection * ModelView * embed<4>(a2v->obj_pos);
-	v2f.intensity = std::max(0.f, proj<3>(ModelMatrix * embed<4>(a2v->obj_normal)) * light_dir);
+	v2f.intensity = std::max(0.f, proj<3>(ModelMatrix * embed<4>(a2v->obj_normal)) * light_dir.normalize());
 	return v2f;
 }
 
@@ -23,12 +23,12 @@ bool GroundShader::fragment(shader_struct_v2f* v2f, Color& color) {
 
 //¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý ToonShader ¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý
 
-ToonShader::ToonShader(MaterialProperty* mp) :IShader(mp) {};
+ToonShader::ToonShader(DrawData* dd) :IShader(dd) {};
 
 shader_struct_v2f ToonShader::vertex(shader_struct_a2v* a2v) {
 	shader_struct_v2f v2f;
 	v2f.clip_pos = Projection * ModelView * embed<4>(a2v->obj_pos);
-	v2f.intensity = std::max(0.f, proj<3>(ModelMatrix * embed<4>(a2v->obj_normal)) * light_dir);
+	v2f.intensity = std::max(0.f, proj<3>(ModelMatrix * embed<4>(a2v->obj_normal)) * light_dir.normalize());
 	return v2f;
 }
 
@@ -49,7 +49,7 @@ bool ToonShader::fragment(shader_struct_v2f* v2f, Color& color) {
 
 //¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý TextureShader ¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý
 
-TextureShader::TextureShader(MaterialProperty* mp) :IShader(mp) {};
+TextureShader::TextureShader(DrawData* dd) :IShader(dd) {};
 
 shader_struct_v2f TextureShader::vertex(shader_struct_a2v* a2v) {
 	shader_struct_v2f v2f;
@@ -59,7 +59,7 @@ shader_struct_v2f TextureShader::vertex(shader_struct_a2v* a2v) {
 }
 
 bool TextureShader::fragment(shader_struct_v2f* v2f, Color& color) {
-	color = tex_diffuse(material_property->diffuse_map, v2f->uv);
+	color = tex_diffuse(draw_data->matrial->material_property->diffuse_map, v2f->uv);
 	return false;
 }
 
@@ -69,7 +69,7 @@ bool TextureShader::fragment(shader_struct_v2f* v2f, Color& color) {
 
 //¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý TextureWithLightShader ¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý
 
-TextureWithLightShader::TextureWithLightShader(MaterialProperty* mp) :IShader(mp) {};
+TextureWithLightShader::TextureWithLightShader(DrawData* dd) :IShader(dd) {};
 
 shader_struct_v2f TextureWithLightShader::vertex(shader_struct_a2v* a2v) {
 	shader_struct_v2f v2f;
@@ -80,8 +80,8 @@ shader_struct_v2f TextureWithLightShader::vertex(shader_struct_a2v* a2v) {
 }
 
 bool TextureWithLightShader::fragment(shader_struct_v2f* v2f, Color& color) {
-	float intensity = std::max(0.f, v2f->world_normal * light_dir);
-	color = tex_diffuse(material_property->diffuse_map, v2f->uv) * intensity;
+	float intensity = std::max(0.f, v2f->world_normal * light_dir.normalize());
+	color = tex_diffuse(draw_data->matrial->material_property->diffuse_map, v2f->uv) * intensity;
 	return false;
 }
 
@@ -91,26 +91,30 @@ bool TextureWithLightShader::fragment(shader_struct_v2f* v2f, Color& color) {
 
 //¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý BlinnShader ¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý
 
-BlinnShader::BlinnShader(MaterialProperty* mp) :IShader(mp) {};
+BlinnShader::BlinnShader(DrawData* dd) :IShader(dd) {};
 
 shader_struct_v2f BlinnShader::vertex(shader_struct_a2v* a2v) {
 	shader_struct_v2f v2f;
 	v2f.clip_pos = Projection * ModelView * embed<4>(a2v->obj_pos);
 	v2f.world_pos = proj<3>(ModelMatrix * embed<4>(a2v->obj_pos));
-	Matrix<1, 4, float> m_objPos;
-	m_objPos[0] = embed<4>(a2v->obj_pos);
-	v2f.world_normal = proj<3>((m_objPos * ModelMatrix.invert())[0]);
+	Matrix<1, 4, float> m_normal;
+	m_normal[0] = embed<4>(a2v->obj_normal);
+	v2f.world_normal = proj<3>((m_normal * ModelMatrix.invert())[0]);
 	v2f.uv = a2v->uv;
 	return v2f;
 }
 
 bool BlinnShader::fragment(shader_struct_v2f* v2f, Color& color) {
-	Vector3f worldNormalDir = (v2f->world_normal).normalize();
-	Color albedo = tex_diffuse(material_property->diffuse_map, v2f->uv) * material_property->color;
-	Color ambient = AMBIENT * albedo;
-	Color diffuse = LightColor * albedo * std::max(0.f, v2f->world_normal * light_dir);
+	MaterialProperty* mp = draw_data->matrial->material_property;
 
-	color = ambient + diffuse;
+	Vector3f worldNormalDir = (v2f->world_normal).normalize();
+	Color albedo = tex_diffuse(mp->diffuse_map, v2f->uv) * mp->color;
+	Color ambient = AMBIENT * albedo;
+	Color diffuse = LightColor * albedo * saturate(worldNormalDir * light_dir.normalize());
+	Vector3f viewDir = (get_camera_pos(draw_data->camera) - v2f->world_pos).normalize();
+	Vector3f halfDir = (viewDir + light_dir.normalize()).normalize();
+	Color spcular = LightColor * mp->specular * std::pow(saturate(worldNormalDir * halfDir), mp->gloss);
+	color = ambient + diffuse + spcular;
 	return false;
 }
 

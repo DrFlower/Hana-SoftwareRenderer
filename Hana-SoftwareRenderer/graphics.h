@@ -40,5 +40,5 @@ void framebuffer_clear_color(framebuffer* framebuffer, vec4_t color);
 void framebuffer_clear_depth(framebuffer* framebuffer, float depth);
 
 
-void graphics_draw_triangle(framebuffer* framebuffer, AppData* appdata);
+void graphics_draw_triangle(framebuffer* framebuffer, DrawData* appdata);
 #endif
