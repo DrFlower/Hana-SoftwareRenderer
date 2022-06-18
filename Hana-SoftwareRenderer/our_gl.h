@@ -17,16 +17,16 @@ void viewport(int x, int y, int w, int h);
 void projection(float coeff = 0.f); // coeff = -1/c
 void lookat(Vector3f eye, Vector3f center, Vector3f up);
 
-struct IShader {
+struct IShader_old {
 	Matrix<4, 3, float> varying_tri; // triangle coordinates (clip coordinates), written by VS, read by FS
 	Matrix<4, 4, float> uniform_Mshadow; // transform framebuffer screen coordinates to shadowbuffer screen coordinates
 
-	virtual ~IShader();
+	virtual ~IShader_old();
 	virtual Vector4f vertex(Model* model, int iface, int nthvert) = 0;
 	virtual bool fragment(Model* model, Vector3f bar, TGAColor& color) = 0;
 };
 
-void triangle(Matrix<4, 3, float>& clipc, Model* model, IShader& shader, framebuffer* framebuffer);
+void triangle(Matrix<4, 3, float>& clipc, Model* model, IShader_old& shader, framebuffer* framebuffer);
 
 #endif //__OUR_GL_H__
 

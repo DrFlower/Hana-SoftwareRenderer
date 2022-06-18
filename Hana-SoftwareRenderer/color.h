@@ -10,6 +10,8 @@ public:
 	Color(unsigned char R, unsigned char G, unsigned char B, unsigned char A = 255);
 	Color(const TGAColor& tga_color);
 
+	static Color White;
+
 	unsigned char& operator[](const size_t i);
 
 	unsigned char operator[](const size_t i) const;

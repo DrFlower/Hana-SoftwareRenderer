@@ -28,21 +28,22 @@ struct shader_struct_v2f
 	Vector3f world_pos;
 	Vector3f world_normal;
 	Vector2f uv;
+	float intensity;
 };
 
-struct IShader2 {
+struct IShader {
 	MaterialProperty* material_property;
-	IShader2(MaterialProperty* mp) :material_property(mp) {};
+	IShader(MaterialProperty* mp) :material_property(mp) {};
 
-	virtual shader_struct_v2f vertex(const shader_struct_a2v& a2v) = 0;
-	virtual bool fragment(const shader_struct_v2f& v2f, Color& color) = 0;
+	virtual shader_struct_v2f vertex(shader_struct_a2v* a2v) = 0;
+	virtual bool fragment(shader_struct_v2f* v2f, Color& color) = 0;
 };
 
 
 class Matrial {
 public:
-	Matrial(IShader2* shader, MaterialProperty* mp) :shader(shader), material_property(mp) {}
-	IShader2* shader;
+	Matrial(IShader* shader, MaterialProperty* mp) :texture_shader(shader), material_property(mp) {}
+	IShader* texture_shader;
 	MaterialProperty* material_property;
 };
 
@@ -71,3 +72,31 @@ static float tex_specular(TGAImage* tex, const Vector2f& uv) {
 	Vector2i _uv(uv[0] * tex->get_width(), uv[1] * tex->get_height());
 	return tex->get(_uv[0], _uv[1])[0] / 1.f;
 }
+
+struct GroundShader : public IShader
+{
+	GroundShader(MaterialProperty* mp);
+	virtual shader_struct_v2f vertex(shader_struct_a2v* a2v) override;
+	virtual bool fragment(shader_struct_v2f* v2f, Color& color) override;
+};
+
+struct ToonShader : public IShader
+{
+	ToonShader(MaterialProperty* mp);
+	virtual shader_struct_v2f vertex(shader_struct_a2v* a2v) override;
+	virtual bool fragment(shader_struct_v2f* v2f, Color& color) override;
+};
+
+struct TextureShader : public IShader
+{
+	TextureShader(MaterialProperty* mp);
+	virtual shader_struct_v2f vertex(shader_struct_a2v* a2v) override;
+	virtual bool fragment(shader_struct_v2f* v2f, Color& color) override;
+};
+
+struct TextureWithLightShader : public IShader
+{
+	TextureWithLightShader(MaterialProperty* mp);
+	virtual shader_struct_v2f vertex(shader_struct_a2v* a2v) override;
+	virtual bool fragment(shader_struct_v2f* v2f, Color& color) override;
+};

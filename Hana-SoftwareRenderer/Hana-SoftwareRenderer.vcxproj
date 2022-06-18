@@ -139,7 +139,7 @@
     <ClCompile Include="math.cpp" />
     <ClCompile Include="model.cpp" />
     <ClCompile Include="our_gl.cpp" />
-    <ClCompile Include="TextureShader.cpp" />
+    <ClCompile Include="IShader.cpp" />
     <ClCompile Include="tgaimage.cpp" />
     <ClCompile Include="win32.cpp" />
   </ItemGroup>

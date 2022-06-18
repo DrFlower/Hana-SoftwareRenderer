@@ -22,7 +22,7 @@ Model* model = NULL;
 //Vector3f    center(0, 0, 0);
 //Vector3f        up(0, 1, 0);
 
-struct GouraudShader : public IShader {
+struct GouraudShader_old : public IShader_old {
 	Vector3f varying_intensity; // written by vertex shader, read by fragment shader
 
 	virtual Vector4f vertex(Model* model, int iface, int nthvert) {
@@ -40,7 +40,7 @@ struct GouraudShader : public IShader {
 	}
 };
 
-struct ToonShader : public IShader {
+struct ToonShader_old : public IShader_old {
 	Vector3f varying_intensity; // written by vertex shader, read by fragment shader
 
 	virtual Vector4f vertex(Model* model, int iface, int nthvert) {
@@ -63,7 +63,7 @@ struct ToonShader : public IShader {
 	}
 };
 
-struct TextureShader : public IShader {
+struct TextureShader_old : public IShader_old {
 	Vector3f          varying_intensity; // written by vertex shader, read by fragment shader
 	Matrix<2, 3, float> varying_uv;        // same as above
 
@@ -85,7 +85,7 @@ struct TextureShader : public IShader {
 	}
 };
 
-struct NormalmappingShader :public IShader
+struct NormalmappingShader_old :public IShader_old
 {
 	Matrix<2, 3, float> varying_uv;  // same as above
 	Matrix<4, 4, float> uniform_MIT; // (Projection*ModelView).invert_transpose()
@@ -110,7 +110,7 @@ struct NormalmappingShader :public IShader
 	}
 };
 
-struct TangentSpaceNormalmappingShader :public IShader
+struct TangentSpaceNormalmappingShader_old :public IShader_old
 {
 	Matrix<2, 3, float> varying_uv;  // triangle uv coordinates, written by the vertex shader, read by the fragment shader
 	Matrix<4, 4, float> uniform_M;   //  Projection*ModelView
@@ -155,60 +155,7 @@ struct TangentSpaceNormalmappingShader :public IShader
 	}
 };
 
-struct TestShader : public IShader
-{
-	Matrix<2, 3, float> varying_uv;  // triangle uv coordinates, written by the vertex shader, read by the fragment shader
-	//Matrix<4, 4, float> uniform_M;   //  Projection*ModelView
-	//Matrix<3, 3, float> varying_nrm; // normal per vertex to be interpolated by FS
-	//Matrix<3, 3, float> ndc_tri;     // triangle in normalized device coordinates
-	Matrix<3, 4, float> Ttow;
-	virtual Vector4f vertex(Model* model, int iface, int nthvert) override
-	{
-		varying_uv.setCol(nthvert, model->uv(iface, nthvert));
-		//varying_nrm.setCol(nthvert, proj<3>((Projection * ModelView).invert_transpose() * embed<4>(model->normal(iface, nthvert), 0.f)));
-		Vector4f gl_Vertex = Projection * ModelView * embed<4>(model->vert(iface, nthvert));
-		varying_tri.setCol(nthvert, gl_Vertex);
-		//uniform_M = Projection * ModelView;
-		//ndc_tri.setCol(nthvert, proj<3>(gl_Vertex / gl_Vertex[3]));
-
-		Vector3f worldPos = model->vert(iface, nthvert);
-		Vector3f worldNormal = model->normal(iface, nthvert);
-
-
-		return gl_Vertex;
-	}
-	virtual bool fragment(Model* model, Vector3f bar, TGAColor& color) override
-	{
-		//Vector3f bn = (varying_nrm * bar).normalize();
-		//Vector2f uv = varying_uv * bar;
-
-		//Matrix<3, 3, float> A;
-		//A[0] = ndc_tri.getCol(1) - ndc_tri.getCol(0);
-		//A[1] = ndc_tri.getCol(2) - ndc_tri.getCol(0);
-		//A[2] = bn;
-
-		//Matrix<3, 3, float> AI = A.invert();
-
-		//Vector3f i = AI * Vector3f(varying_uv[0][1] - varying_uv[0][0], varying_uv[0][2] - varying_uv[0][0], 0);
-		//Vector3f j = AI * Vector3f(varying_uv[1][1] - varying_uv[1][0], varying_uv[1][2] - varying_uv[1][0], 0);
-
-		//Matrix<3, 3, float> B;
-		//B.setCol(0, i.normalize());
-		//B.setCol(1, j.normalize());
-		//B.setCol(2, bn);
-
-		//Vector3f n = (B * model->normal(uv)).normalize();
-		//Vector3f l = proj<3>(Projection * ModelView * embed<4>(light_dir, 0.f)).normalize();
-		//float diff = std::max(0.f, n * l);
-		//color = model->diffuse(uv) * diff;
-
-		Vector2f uv = varying_uv * bar;
-		color = model->diffuse(uv);
-		return false;
-	}
-};
-
-struct SpecularShader : public IShader
+struct SpecularShader_old : public IShader_old
 {
 	Matrix<2, 3, float> varying_uv;  // triangle uv coordinates, written by the vertex shader, read by the fragment shader
 	Matrix<4, 4, float> uniform_M;   //  Projection*ModelView
@@ -257,7 +204,7 @@ struct SpecularShader : public IShader
 	}
 };
 
-void RenderModel(std::string modelName, framebuffer* framebuffer, IShader& shader)
+void RenderModel(std::string modelName, framebuffer* framebuffer, IShader_old& shader)
 {
 	if (!model)
 	{
@@ -275,34 +222,7 @@ void RenderModel(std::string modelName, framebuffer* framebuffer, IShader& shade
 	}
 }
 
-struct TextureShader2 : public IShader2
-{
-	TextureShader2(MaterialProperty* mp) :IShader2(mp) {};
 
-	// Í¨¹ý IShader ¼Ì³Ð
-	virtual shader_struct_v2f vertex(const shader_struct_a2v& a2v) override {
-		shader_struct_v2f v2f;
-		v2f.clip_pos = Projection * ModelView * embed<4>(a2v.obj_pos);
-		//v2f.world_pos = proj<3>(ModelMatrix * embed<4>(a2v.obj_pos));
-		//Matrix<1, 4, float> m_objPos;
-		//m_objPos[0] = embed<4>(a2v.obj_pos);
-		//v2f.world_normal = proj<3>((m_objPos * ModelMatrix.invert())[0]);
-		v2f.world_normal = a2v.obj_normal;
-		v2f.uv = a2v.uv;
-		//v2f.intensity = std::max(0.f, tex_normal(material_property->normal_map, v2f.uv) * light_dir);
-		return v2f;
-	}
-
-	virtual bool fragment(const shader_struct_v2f& v2f, Color& color) override {
-		//float intensity = std::max(0.f, v2f.world_normal * light_dir);
-		//float intensity = std::max(0.f, tex_normal(material_property->normal_map, v2f.uv) * light_dir);
-		float intensity = std::max(0.f, v2f.world_normal * light_dir);
-		//float intensity = 1;
-		color = tex_diffuse(material_property->diffuse_map, v2f.uv) * intensity;
-		//color = Color(255, 255, 255);
-		return false;
-	}
-};
 
 int main()
 {
@@ -336,13 +256,12 @@ int main()
 	callbacks.button_callback = button_callback;
 	callbacks.scroll_callback = scroll_callback;
 
-	GouraudShader gouraudShader;
-	ToonShader toonShader;
-	TextureShader textureShader;
-	NormalmappingShader normalmapping;
-	TangentSpaceNormalmappingShader tangentSpaceNormalmappingShader;
-	SpecularShader specularShader;
-	TestShader testShader;
+	GouraudShader_old gouraudShader;
+	ToonShader_old toonShader;
+	TextureShader_old textureShader;
+	NormalmappingShader_old normalmapping;
+	TangentSpaceNormalmappingShader_old tangentSpaceNormalmappingShader;
+	SpecularShader_old specularShader;
 
 
 	model = new Model("D:\\Development\\Github\\Hana-SoftwareRenderer\\Hana-SoftwareRenderer\\obj\\african_head.obj");
@@ -356,9 +275,12 @@ int main()
 	mp.gloss = 1;
 	mp.bump_scale = 1;
 
-	TextureShader2 shader = TextureShader2(&mp);
+	GroundShader ground_shader = GroundShader(&mp);
+	ToonShader toon_shader = ToonShader(&mp);
+	TextureShader texture_shader = TextureShader(&mp);
+	TextureWithLightShader text_with_light_shader = TextureWithLightShader(&mp);
 
-	Matrial* material = new Matrial(&shader, &mp);
+	Matrial* material = new Matrial(&text_with_light_shader, &mp);
 	AppData* appdata = new AppData(model, material);
 
 	window_set_userdata(window, &record);
@@ -384,9 +306,9 @@ int main()
 
 		Projection = camera_get_proj_matrix(camera) * m;
 
-		RenderModel("african_head", framebuffer, textureShader);
+		//RenderModel("african_head", framebuffer, toonShader);
 
-		//graphics_draw_triangle(framebuffer, appdata);
+		graphics_draw_triangle(framebuffer, appdata);
 
 		window_draw_buffer(window, framebuffer);
 		num_frames += 1;

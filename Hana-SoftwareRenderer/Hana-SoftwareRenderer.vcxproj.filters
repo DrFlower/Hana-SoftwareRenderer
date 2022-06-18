@@ -23,7 +23,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="TextureShader.cpp">
+    <ClCompile Include="IShader.cpp">
       <Filter>shaders</Filter>
     </ClCompile>
     <ClCompile Include="input.cpp">

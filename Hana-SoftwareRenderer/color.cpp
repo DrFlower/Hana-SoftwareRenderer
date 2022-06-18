@@ -4,6 +4,8 @@ Color::Color() :r(), g(), b(), a() {};
 Color::Color(unsigned char R, unsigned char G, unsigned char B, unsigned char A) :r(R), g(G), b(B), a(A) {}
 Color::Color(const TGAColor& tga_color) :r(tga_color.bgra[2]), g(tga_color.bgra[1]), b(tga_color.bgra[0]), a(tga_color.bgra[3]) {}
 
+Color Color::White(255, 255, 255);
+
 unsigned char& Color::operator[](const size_t i) {
 	assert(i >= 0 && i <= 3);
 	if (i == 0)

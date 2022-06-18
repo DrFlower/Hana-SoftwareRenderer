@@ -190,43 +190,21 @@ static void rasterize_triangle(framebuffer* framebuffer, AppData* appdata, shade
 			Vector3f barycentric_weights = barycentric(pts2[0], pts2[1], pts2[2], P);
 			if (barycentric_weights.x < 0 || barycentric_weights.y < 0 || barycentric_weights.z < 0) continue;
 
-
-			Vector3f bc_clip = Vector3f(barycentric_weights.x / m_screen_coords[0][3], barycentric_weights.y / m_screen_coords[1][3], barycentric_weights.z / m_screen_coords[2][3]);
-			bc_clip = bc_clip / (bc_clip.x + bc_clip.y + bc_clip.z);
-			//float frag_depth = clip_coords[2] * bc_clip;
-
+			// 深度插值
 			float frag_depth = interpolate_depth(screen_coords, barycentric_weights);
 
+			// 深度测试
+			if (framebuffer->get_depth(P.x, P.y) > frag_depth) continue;
+
+			// 变量插值
 			shader_struct_v2f interpolate_v2f;
-
-			//Matrix<4, 3, float> varying_clip_pos, varying_world_pos, varying_clip_uv, varying_clip_normal;
-			//for (int i = 0; i < 3; i++) { varying_clip_pos.setCol(i, v2f[i].clip_pos); }
-			//for (int i = 0; i < 3; i++) { varying_world_pos.setCol(i, embed<4>(v2f[i].world_pos)); }
-			//for (int i = 0; i < 3; i++) { varying_clip_uv.setCol(i, embed<4>(v2f[i].uv)); }
-			//for (int i = 0; i < 3; i++) { varying_clip_normal.setCol(i, embed<4>(v2f[i].world_normal)); }
-
-
-			//interpolate_v2f.clip_pos = varying_clip_pos * bc_clip;
-			//interpolate_v2f.world_pos = proj<3>(varying_world_pos * bc_clip);
-			//interpolate_v2f.uv = proj<2>(varying_clip_uv * bc_clip);
-			//interpolate_v2f.world_normal = proj<3>(varying_clip_normal * bc_clip);
-
-	/*		Matrix<4, 3, float> varying_clip_pos;
-			for (int i = 0; i < 3; i++) { varying_clip_pos.setCol(i, v2f[i].clip_pos); }
-			interpolate_v2f.clip_pos = varying_clip_pos * bc_clip;*/
-
 			interpolate_varyings(v2f, &interpolate_v2f, sizeof(shader_struct_v2f), barycentric_weights, recip_w);
 
-			/*		shader_struct_v2f interpolate_v2f;
-					interpolate_v2f.clip_pos = v2f->clip_pos;
-					interpolate_v2f.world_pos = v2f->world_pos;
-					interpolate_v2f.uv = v2f->uv;
-					interpolate_v2f.world_normal = v2f->world_normal;*/
-
-			if (framebuffer->get_depth(P.x, P.y) > frag_depth) continue;
+			// fragment shader
 			Color color;
-			bool discard = appdata->matrial->shader->fragment(interpolate_v2f, color);
+			bool discard = appdata->matrial->texture_shader->fragment(&interpolate_v2f, color);
 
+			// 绘制像素
 			if (!discard) {
 				framebuffer->set_depth(P.x, P.y, frag_depth);
 				framebuffer->set_color(P.x, P.y, color);
@@ -243,7 +221,7 @@ void graphics_draw_triangle(framebuffer* framebuffer, AppData* appdata) {
 			a2v.obj_pos = appdata->model->vert(i, j);
 			a2v.obj_normal = appdata->model->normal(i, j);
 			a2v.uv = appdata->model->uv(i, j);
-			v2fs[j] = appdata->matrial->shader->vertex(a2v);
+			v2fs[j] = appdata->matrial->texture_shader->vertex(&a2v);
 		}
 
 		rasterize_triangle(framebuffer, appdata, v2fs);
