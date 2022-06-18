@@ -119,3 +119,57 @@ bool BlinnShader::fragment(shader_struct_v2f* v2f, Color& color) {
 }
 
 //¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü BlinnShader ¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü
+
+
+//¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý NormalMapShader ¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý
+
+NormalMapShader::NormalMapShader(DrawData* dd) :IShader(dd) {};
+
+shader_struct_v2f NormalMapShader::vertex(shader_struct_a2v* a2v) {
+	MaterialProperty* mp = draw_data->matrial->material_property;
+	shader_struct_v2f v2f;
+	v2f.clip_pos = Projection * ModelView * embed<4>(a2v->obj_pos);
+	v2f.uv = a2v->uv;
+	v2f.world_pos = proj<3>(ModelMatrix * embed<4>(a2v->obj_pos));
+	Matrix<1, 4, float> m_normal;
+	m_normal[0] = embed<4>(a2v->obj_normal);
+	v2f.world_normal = proj<3>((m_normal * ModelMatrix.invert())[0]);
+	return v2f;
+}
+
+bool NormalMapShader::fragment(shader_struct_v2f* v2f, Color& color) {
+	MaterialProperty* mp = draw_data->matrial->material_property;
+
+	Vector3f normal = v2f->world_normal;
+
+	float x = normal.x;
+	float y = normal.y;
+	float z = normal.z;
+
+	Vector3f t = Vector3f(x * y / std::sqrt(x * x + z * z), std::sqrt(x * x + z * z), z * y / std::sqrt(x * x + z * z));
+	Vector3f b = cross(normal, t);
+
+	Matrix3x3 TBN;
+	TBN[0] = Vector3f(t.x, b.x, normal.x);
+	TBN[1] = Vector3f(t.y, b.y, normal.y);
+	TBN[2] = Vector3f(t.z, b.z, normal.z);
+
+	Vector3f bump = tex_normal(mp->normal_map, v2f->uv);
+	bump.x = bump.x * mp->bump_scale;
+	bump.y = bump.y * mp->bump_scale;
+	bump.z = sqrt(1.0 - saturate(Vector2f(bump.x, bump.y) * Vector2f(bump.x, bump.y)));
+
+	normal = (TBN * bump).normalize();
+
+	Vector3f worldNormalDir = normal;
+	Color albedo = tex_diffuse(mp->diffuse_map, v2f->uv) * mp->color;
+	Color ambient = AMBIENT * albedo;
+	Color diffuse = LightColor * albedo * saturate(worldNormalDir * light_dir.normalize());
+	Vector3f viewDir = (get_camera_pos(draw_data->camera) - v2f->world_pos).normalize();
+	Vector3f halfDir = (viewDir + light_dir.normalize()).normalize();
+	Color spcular = LightColor * mp->specular * std::pow(saturate(worldNormalDir * halfDir), mp->gloss);
+	color = ambient + diffuse;// +spcular;
+	return false;
+}
+
+//¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü NormalMapShader ¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü

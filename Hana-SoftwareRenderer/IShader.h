@@ -30,6 +30,9 @@ struct shader_struct_v2f
 	Vector3f world_normal;
 	Vector2f uv;
 	float intensity;
+	Vector3f ndc0;
+	Vector3f ndc1;
+	Vector3f ndc2;
 };
 
 class Matrial;
@@ -118,6 +121,12 @@ struct TextureWithLightShader : public IShader{
 
 struct BlinnShader : public IShader{
 	BlinnShader(DrawData* dd);
+	virtual shader_struct_v2f vertex(shader_struct_a2v* a2v) override;
+	virtual bool fragment(shader_struct_v2f* v2f, Color& color) override;
+};
+
+struct NormalMapShader : public IShader {
+	NormalMapShader(DrawData* dd);
 	virtual shader_struct_v2f vertex(shader_struct_a2v* a2v) override;
 	virtual bool fragment(shader_struct_v2f* v2f, Color& color) override;
 };

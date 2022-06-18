@@ -282,8 +282,9 @@ int main()
 	TextureShader texture_shader = TextureShader(draw_data);
 	TextureWithLightShader text_with_light_shader = TextureWithLightShader(draw_data);
 	BlinnShader blinn_shader = BlinnShader(draw_data);
+	NormalMapShader normalmap_shader = NormalMapShader(draw_data);
 
-	Matrial* material = new Matrial(&blinn_shader, &mp);
+	Matrial* material = new Matrial(&normalmap_shader, &mp);
 	draw_data->camera = camera;
 	draw_data->matrial = material;
 	draw_data->model = model;
@@ -311,7 +312,7 @@ int main()
 
 		Projection = camera_get_proj_matrix(camera) * m;
 
-		//RenderModel("african_head", framebuffer, toonShader);
+		//RenderModel("african_head", framebuffer, tangentSpaceNormalmappingShader);
 
 		graphics_draw_triangle(framebuffer, draw_data);
 
