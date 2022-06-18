@@ -55,6 +55,15 @@ void framebuffer_clear_depth(framebuffer* framebuffer, float depth) {
 	}
 }
 
+/*
+ * for facing determination, see subsection 3.5.1 of
+ * https://www.khronos.org/registry/OpenGL/specs/es/2.0/es_full_spec_2.0.pdf
+ *
+ * this is the same as (but more efficient than)
+ *     vec3_t ab = vec3_sub(b, a);
+ *     vec3_t ac = vec3_sub(c, a);
+ *     return vec3_cross(ab, ac).z <= 0;
+ */
 static bool is_back_facing(Vector3f* ndc_coords) {
 	Vector3f a = ndc_coords[0];
 	Vector3f b = ndc_coords[1];
@@ -65,6 +74,10 @@ static bool is_back_facing(Vector3f* ndc_coords) {
 	return signed_area <= 0;
 }
 
+/*
+ * for depth interpolation, see subsection 3.5.1 of
+ * https://www.khronos.org/registry/OpenGL/specs/es/2.0/es_full_spec_2.0.pdf
+ */
 static float interpolate_depth(Vector3f* screen_coords, Vector3f weights) {
 	Vector3f screen_depth;
 	for (size_t i = 0; i < 3; i++)
@@ -73,6 +86,50 @@ static float interpolate_depth(Vector3f* screen_coords, Vector3f weights) {
 	}
 
 	return screen_depth * weights;
+}
+
+/*
+ * for perspective correct interpolation, see
+ * https://www.comp.nus.edu.sg/~lowkl/publications/lowk_persp_interp_techrep.pdf
+ * https://www.khronos.org/registry/OpenGL/specs/es/2.0/es_full_spec_2.0.pdf
+ *
+ * equation 15 in reference 1 (page 2) is a simplified 2d version of
+ * equation 3.5 in reference 2 (page 58) which uses barycentric coordinates
+ */
+static void interpolate_varyings(
+	void* src_varyings[3], void* dst_varyings,
+	int sizeof_varyings, vec3_t weights, float recip_w[3]) {
+	int num_floats = sizeof_varyings / sizeof(float);
+	float* src0 = (float*)src_varyings[0];
+	float* src1 = (float*)src_varyings[1];
+	float* src2 = (float*)src_varyings[2];
+	float* dst = (float*)dst_varyings;
+	float weight0 = recip_w[0] * weights.x;
+	float weight1 = recip_w[1] * weights.y;
+	float weight2 = recip_w[2] * weights.z;
+	float normalizer = 1 / (weight0 + weight1 + weight2);
+	int i;
+	for (i = 0; i < num_floats; i++) {
+		float sum = src0[i] * weight0 + src1[i] * weight1 + src2[i] * weight2;
+		dst[i] = sum * normalizer;
+	}
+}
+
+static void interpolate_varyings(shader_struct_v2f* v2f, shader_struct_v2f* ret, int sizeof_varyings, Vector3f weights, float recip_w[3]) {
+	int num_floats = sizeof_varyings / sizeof(float);
+	float* src0 = (float*)(&v2f[0]);
+	float* src1 = (float*)(&v2f[1]);
+	float* src2 = (float*)(&v2f[2]);
+	float* dst = (float*)ret;
+	float weight0 = recip_w[0] * weights.x;
+	float weight1 = recip_w[1] * weights.y;
+	float weight2 = recip_w[2] * weights.z;
+	float normalizer = 1 / (weight0 + weight1 + weight2);
+	int i;
+	for (i = 0; i < num_floats; i++) {
+		float sum = src0[i] * weight0 + src1[i] * weight1 + src2[i] * weight2;
+		dst[i] = sum * normalizer;
+	}
 }
 
 static Vector3f barycentric(Vector2f A, Vector2f B, Vector2f C, Vector2f P) {
@@ -104,6 +161,12 @@ static void rasterize_triangle(framebuffer* framebuffer, AppData* appdata, shade
 	Vector3f screen_coords[3];
 	for (int i = 0; i < 3; i++) screen_coords[i] = proj<3>(m_screen_coords[i]);
 
+	float recip_w[3];
+	/* reciprocals of w */
+	for (int i = 0; i < 3; i++) {
+		recip_w[i] = 1 / v2f[i].clip_pos[3];
+	}
+
 
 	Matrix<3, 2, float> pts2;
 	for (int i = 0; i < 3; i++) pts2[i] = proj<2>(m_screen_coords[i] / m_screen_coords[i][3]);
@@ -120,8 +183,8 @@ static void rasterize_triangle(framebuffer* framebuffer, AppData* appdata, shade
 	}
 
 	Vector2i P;
-	shader_struct_v2f interpolate_v2f;
-	Matrix<4, 3, float> varying_clip_pos;
+
+
 	for (P.x = bboxmin.x; P.x <= bboxmax.x; P.x++) {
 		for (P.y = bboxmin.y; P.y <= bboxmax.y; P.y++) {
 			Vector3f barycentric_weights = barycentric(pts2[0], pts2[1], pts2[2], P);
@@ -133,6 +196,8 @@ static void rasterize_triangle(framebuffer* framebuffer, AppData* appdata, shade
 			//float frag_depth = clip_coords[2] * bc_clip;
 
 			float frag_depth = interpolate_depth(screen_coords, barycentric_weights);
+
+			shader_struct_v2f interpolate_v2f;
 
 			//Matrix<4, 3, float> varying_clip_pos, varying_world_pos, varying_clip_uv, varying_clip_normal;
 			//for (int i = 0; i < 3; i++) { varying_clip_pos.setCol(i, v2f[i].clip_pos); }
@@ -146,9 +211,11 @@ static void rasterize_triangle(framebuffer* framebuffer, AppData* appdata, shade
 			//interpolate_v2f.uv = proj<2>(varying_clip_uv * bc_clip);
 			//interpolate_v2f.world_normal = proj<3>(varying_clip_normal * bc_clip);
 
-			
+	/*		Matrix<4, 3, float> varying_clip_pos;
 			for (int i = 0; i < 3; i++) { varying_clip_pos.setCol(i, v2f[i].clip_pos); }
-			interpolate_v2f.clip_pos = varying_clip_pos * bc_clip;
+			interpolate_v2f.clip_pos = varying_clip_pos * bc_clip;*/
+
+			interpolate_varyings(v2f, &interpolate_v2f, sizeof(shader_struct_v2f), barycentric_weights, recip_w);
 
 			/*		shader_struct_v2f interpolate_v2f;
 					interpolate_v2f.clip_pos = v2f->clip_pos;
@@ -174,50 +241,11 @@ void graphics_draw_triangle(framebuffer* framebuffer, AppData* appdata) {
 		for (int j = 0; j < 3; j++) {
 			shader_struct_a2v a2v;
 			a2v.obj_pos = appdata->model->vert(i, j);
-			//a2v.obj_normal = appdata->model->normal(i, j);
-			//a2v.uv = appdata->model->uv(i, j);
+			a2v.obj_normal = appdata->model->normal(i, j);
+			a2v.uv = appdata->model->uv(i, j);
 			v2fs[j] = appdata->matrial->shader->vertex(a2v);
 		}
 
 		rasterize_triangle(framebuffer, appdata, v2fs);
 	}
-
-	//int num_vertices;
-	//int i;
-
-	///* execute vertex shader */
-	//for (i = 0; i < 3; i++) {
-	//    vec4_t clip_coord = program->vertex_shader(program->shader_attribs[i],
-	//        program->in_varyings[i],
-	//        program->shader_uniforms);
-	//    program->in_coords[i] = clip_coord;
-	//}
-
-	///* triangle clipping */
-	//num_vertices = clip_triangle(program->sizeof_varyings,
-	//    program->in_coords, program->in_varyings,
-	//    program->out_coords, program->out_varyings);
-
-	///* triangle assembly */
-	//for (i = 0; i < num_vertices - 2; i++) {
-	//    int index0 = 0;
-	//    int index1 = i + 1;
-	//    int index2 = i + 2;
-	//    vec4_t clip_coords[3];
-	//    void* varyings[3];
-	//    int is_culled;
-
-	//    clip_coords[0] = program->out_coords[index0];
-	//    clip_coords[1] = program->out_coords[index1];
-	//    clip_coords[2] = program->out_coords[index2];
-	//    varyings[0] = program->out_varyings[index0];
-	//    varyings[1] = program->out_varyings[index1];
-	//    varyings[2] = program->out_varyings[index2];
-
-	//    is_culled = rasterize_triangle(framebuffer, program,
-	//        clip_coords, varyings);
-	//    if (is_culled) {
-	//        break;
-	//    }
-	//}
 }

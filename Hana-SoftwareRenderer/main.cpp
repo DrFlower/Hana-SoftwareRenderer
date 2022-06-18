@@ -287,15 +287,19 @@ struct TextureShader2 : public IShader2
 		//Matrix<1, 4, float> m_objPos;
 		//m_objPos[0] = embed<4>(a2v.obj_pos);
 		//v2f.world_normal = proj<3>((m_objPos * ModelMatrix.invert())[0]);
-		//v2f.uv = a2v.uv;
+		v2f.world_normal = a2v.obj_normal;
+		v2f.uv = a2v.uv;
+		//v2f.intensity = std::max(0.f, tex_normal(material_property->normal_map, v2f.uv) * light_dir);
 		return v2f;
 	}
 
 	virtual bool fragment(const shader_struct_v2f& v2f, Color& color) override {
 		//float intensity = std::max(0.f, v2f.world_normal * light_dir);
+		//float intensity = std::max(0.f, tex_normal(material_property->normal_map, v2f.uv) * light_dir);
+		float intensity = std::max(0.f, v2f.world_normal * light_dir);
 		//float intensity = 1;
-		//color = tex_diffuse(material_property->diffuse_map, v2f.uv) * intensity;
-		color = Color(255, 255, 255);
+		color = tex_diffuse(material_property->diffuse_map, v2f.uv) * intensity;
+		//color = Color(255, 255, 255);
 		return false;
 	}
 };
@@ -380,9 +384,9 @@ int main()
 
 		Projection = camera_get_proj_matrix(camera) * m;
 
-		//RenderModel("african_head", framebuffer, gouraudShader);
+		RenderModel("african_head", framebuffer, textureShader);
 
-		graphics_draw_triangle(framebuffer, appdata);
+		//graphics_draw_triangle(framebuffer, appdata);
 
 		window_draw_buffer(window, framebuffer);
 		num_frames += 1;
