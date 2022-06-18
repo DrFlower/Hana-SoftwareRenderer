@@ -4,6 +4,7 @@
 #include "tgaimage.h"
 #include "model.h"
 #include "color.h"
+#include "camera.h"
 
 struct MaterialProperty {
 	TGAImage* diffuse_map;
@@ -49,9 +50,10 @@ public:
 
 class AppData {
 public:
-	AppData(Model* model, Matrial* matrial) :model(model), matrial(matrial) {}
+	AppData(Model* model, Matrial* matrial, camera_t* camera) :model(model), matrial(matrial), camera(camera) {}
 	Model* model;
 	Matrial* matrial;
+	camera_t* camera;
 };
 
 static Color tex_diffuse(TGAImage* tex, const Vector2f& uv) {
@@ -97,6 +99,13 @@ struct TextureShader : public IShader
 struct TextureWithLightShader : public IShader
 {
 	TextureWithLightShader(MaterialProperty* mp);
+	virtual shader_struct_v2f vertex(shader_struct_a2v* a2v) override;
+	virtual bool fragment(shader_struct_v2f* v2f, Color& color) override;
+};
+
+struct BlinnShader : public IShader
+{
+	BlinnShader(MaterialProperty* mp);
 	virtual shader_struct_v2f vertex(shader_struct_a2v* a2v) override;
 	virtual bool fragment(shader_struct_v2f* v2f, Color& color) override;
 };

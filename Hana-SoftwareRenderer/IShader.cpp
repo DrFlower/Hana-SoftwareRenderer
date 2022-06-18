@@ -65,6 +65,8 @@ bool TextureShader::fragment(shader_struct_v2f* v2f, Color& color) {
 
 //¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü TextureShader ¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü
 
+
+
 //¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý TextureWithLightShader ¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý
 
 TextureWithLightShader::TextureWithLightShader(MaterialProperty* mp) :IShader(mp) {};
@@ -85,28 +87,31 @@ bool TextureWithLightShader::fragment(shader_struct_v2f* v2f, Color& color) {
 
 //¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü TextureWithLightShader ¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü
 
-//¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý TextureWithLightShader ¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý
 
-//TextureWithLightShader::TextureWithLightShader(MaterialProperty* mp) :IShader(mp) {};
-//
-//shader_struct_v2f TextureWithLightShader::vertex(shader_struct_a2v* a2v) {
-//	shader_struct_v2f v2f;
-//	v2f.clip_pos = Projection * ModelView * embed<4>(a2v->obj_pos);
-//	//v2f.world_pos = proj<3>(ModelMatrix * embed<4>(a2v.obj_pos));
-//	//Matrix<1, 4, float> m_objPos;
-//	//m_objPos[0] = embed<4>(a2v.obj_pos);
-//	//v2f.world_normal = proj<3>((m_objPos * ModelMatrix.invert())[0]);
-//	v2f.world_normal = a2v->obj_normal;
-//	v2f.uv = a2v->uv;
-//	return v2f;
-//}
-//
-//bool TextureWithLightShader::fragment(shader_struct_v2f* v2f, Color& color) {
-//	//float intensity = std::max(0.f, v2f.world_normal * light_dir);
-//	//float intensity = std::max(0.f, tex_normal(material_property->normal_map, v2f.uv) * light_dir);
-//	float intensity = std::max(0.f, v2f->world_normal * light_dir);
-//	color = tex_diffuse(material_property->diffuse_map, v2f->uv) * intensity;
-//	return false;
-//}
-//
-////¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü TextureWithLightShader ¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü
+
+//¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý BlinnShader ¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý
+
+BlinnShader::BlinnShader(MaterialProperty* mp) :IShader(mp) {};
+
+shader_struct_v2f BlinnShader::vertex(shader_struct_a2v* a2v) {
+	shader_struct_v2f v2f;
+	v2f.clip_pos = Projection * ModelView * embed<4>(a2v->obj_pos);
+	v2f.world_pos = proj<3>(ModelMatrix * embed<4>(a2v->obj_pos));
+	Matrix<1, 4, float> m_objPos;
+	m_objPos[0] = embed<4>(a2v->obj_pos);
+	v2f.world_normal = proj<3>((m_objPos * ModelMatrix.invert())[0]);
+	v2f.uv = a2v->uv;
+	return v2f;
+}
+
+bool BlinnShader::fragment(shader_struct_v2f* v2f, Color& color) {
+	Vector3f worldNormalDir = (v2f->world_normal).normalize();
+	Color albedo = tex_diffuse(material_property->diffuse_map, v2f->uv) * material_property->color;
+	Color ambient = AMBIENT * albedo;
+	Color diffuse = LightColor * albedo * std::max(0.f, v2f->world_normal * light_dir);
+
+	color = ambient + diffuse;
+	return false;
+}
+
+//¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü BlinnShader ¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü

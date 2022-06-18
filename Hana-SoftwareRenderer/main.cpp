@@ -270,8 +270,8 @@ int main()
 	mp.diffuse_map = model->get_diffuse_map();
 	mp.normal_map = model->get_normal_map();
 	mp.specular_map = model->get_specular_map();
-	mp.color = Color(1, 1, 1, 1);
-	mp.specular = Color(1, 1, 1, 1);
+	mp.color = Color::White;
+	mp.specular = Color::White;
 	mp.gloss = 1;
 	mp.bump_scale = 1;
 
@@ -279,9 +279,10 @@ int main()
 	ToonShader toon_shader = ToonShader(&mp);
 	TextureShader texture_shader = TextureShader(&mp);
 	TextureWithLightShader text_with_light_shader = TextureWithLightShader(&mp);
+	BlinnShader blinn_shader = BlinnShader(&mp);
 
-	Matrial* material = new Matrial(&text_with_light_shader, &mp);
-	AppData* appdata = new AppData(model, material);
+	Matrial* material = new Matrial(&blinn_shader, &mp);
+	AppData* appdata = new AppData(model, material, camera);
 
 	window_set_userdata(window, &record);
 	input_set_callbacks(window, callbacks);

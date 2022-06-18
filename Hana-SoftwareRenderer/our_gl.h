@@ -12,6 +12,8 @@ extern Matrix4x4 Viewport;
 extern Matrix4x4 Projection;
 const float depth = 2000.f;
 extern Vector3f light_dir;
+extern Color AMBIENT;
+extern Color LightColor;
 
 void viewport(int x, int y, int w, int h);
 void projection(float coeff = 0.f); // coeff = -1/c
