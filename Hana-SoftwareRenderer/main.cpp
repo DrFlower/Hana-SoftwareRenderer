@@ -27,7 +27,7 @@ struct GouraudShader_old : public IShader_old {
 
 	virtual Vector4f vertex(Model* model, int iface, int nthvert) {
 		Vector4f gl_Vertex = embed<4>(model->vert(iface, nthvert)); // read the vertex from .obj file
-		gl_Vertex = Projection * ModelView * gl_Vertex;     // transform it to screen coordinates
+		gl_Vertex = Projection * ViewMatrix * gl_Vertex;     // transform it to screen coordinates
 		varying_tri.setCol(nthvert, gl_Vertex);
 		varying_intensity[nthvert] = std::max(0.f, model->normal(iface, nthvert) * light_dir); // get diffuse lighting intensity
 		return gl_Vertex;
@@ -45,7 +45,7 @@ struct ToonShader_old : public IShader_old {
 
 	virtual Vector4f vertex(Model* model, int iface, int nthvert) {
 		Vector4f gl_Vertex = embed<4>(model->vert(iface, nthvert)); // read the vertex from .obj file
-		gl_Vertex = Projection * ModelView * gl_Vertex;     // transform it to screen coordinates
+		gl_Vertex = Projection * ViewMatrix * gl_Vertex;     // transform it to screen coordinates
 		varying_tri.setCol(nthvert, gl_Vertex);
 		varying_intensity[nthvert] = std::max(0.f, model->normal(iface, nthvert) * light_dir); // get diffuse lighting intensity
 		return gl_Vertex;
@@ -72,7 +72,7 @@ struct TextureShader_old : public IShader_old {
 		varying_intensity[nthvert] = std::max(0.f, model->normal(iface, nthvert) * light_dir); // get diffuse lighting intensity
 		Vector3f v = model->vert(iface, nthvert);
 		Vector4f gl_Vertex = embed<4>(v); // read the vertex from .obj file
-		gl_Vertex = Projection * ModelView * gl_Vertex; // transform it to screen coordinates
+		gl_Vertex = Projection * ViewMatrix * gl_Vertex; // transform it to screen coordinates
 		varying_tri.setCol(nthvert, gl_Vertex);
 		return gl_Vertex;
 	}
@@ -94,9 +94,9 @@ struct NormalmappingShader_old :public IShader_old
 	{
 		varying_uv.setCol(nthvert, model->uv(iface, nthvert));
 		Vector4f gl_Vertex = embed<4>(model->vert(iface, nthvert)); // read the vertex from .obj file
-		gl_Vertex = Projection * ModelView * gl_Vertex; // transform it to screen coordinates
+		gl_Vertex = Projection * ViewMatrix * gl_Vertex; // transform it to screen coordinates
 		varying_tri.setCol(nthvert, gl_Vertex);
-		uniform_MIT = (Projection * ModelView).invert_transpose();
+		uniform_MIT = (Projection * ViewMatrix).invert_transpose();
 		return gl_Vertex;
 	}
 	virtual bool fragment(Model* model, Vector3f bar, TGAColor& color) override
@@ -119,10 +119,10 @@ struct TangentSpaceNormalmappingShader_old :public IShader_old
 
 	virtual Vector4f vertex(Model* model, int iface, int nthvert) {
 		varying_uv.setCol(nthvert, model->uv(iface, nthvert));
-		varying_nrm.setCol(nthvert, proj<3>((Projection * ModelView).invert_transpose() * embed<4>(model->normal(iface, nthvert), 0.f)));
-		Vector4f gl_Vertex = Projection * ModelView * embed<4>(model->vert(iface, nthvert));
+		varying_nrm.setCol(nthvert, proj<3>((Projection * ViewMatrix).invert_transpose() * embed<4>(model->normal(iface, nthvert), 0.f)));
+		Vector4f gl_Vertex = Projection * ViewMatrix * embed<4>(model->vert(iface, nthvert));
 		varying_tri.setCol(nthvert, gl_Vertex);
-		uniform_M = Projection * ModelView;
+		uniform_M = Projection * ViewMatrix;
 		ndc_tri.setCol(nthvert, proj<3>(gl_Vertex / gl_Vertex[3]));
 		return gl_Vertex;
 	}
@@ -164,10 +164,10 @@ struct SpecularShader_old : public IShader_old
 
 	virtual Vector4f vertex(Model* model, int iface, int nthvert) {
 		varying_uv.setCol(nthvert, model->uv(iface, nthvert));
-		varying_nrm.setCol(nthvert, proj<3>((Projection * ModelView).invert_transpose() * embed<4>(model->normal(iface, nthvert), 0.f)));
-		Vector4f gl_Vertex = Projection * ModelView * embed<4>(model->vert(iface, nthvert));
+		varying_nrm.setCol(nthvert, proj<3>((Projection * ViewMatrix).invert_transpose() * embed<4>(model->normal(iface, nthvert), 0.f)));
+		Vector4f gl_Vertex = Projection * ViewMatrix * embed<4>(model->vert(iface, nthvert));
 		varying_tri.setCol(nthvert, gl_Vertex);
-		uniform_M = Projection * ModelView;
+		uniform_M = Projection * ViewMatrix;
 		ndc_tri.setCol(nthvert, proj<3>(gl_Vertex / gl_Vertex[3]));
 		return gl_Vertex;
 	}
@@ -222,7 +222,52 @@ void RenderModel(std::string modelName, framebuffer* framebuffer, IShader_old& s
 	}
 }
 
+Matrix4x4 matrix4_lookat(Vector3f eye, Vector3f target, Vector3f up) {
+	Vector3f z_axis = (eye - target).normalize();
+	Vector3f x_axis = cross(up, z_axis).normalize();
+	Vector3f y_axis = cross(z_axis, x_axis);
+	Matrix4x4 m = Matrix4x4::identity();
 
+	m[0][0] = x_axis.x;
+	m[0][1] = x_axis.y;
+	m[0][2] = x_axis.z;
+
+	m[1][0] = y_axis.x;
+	m[1][1] = y_axis.y;
+	m[1][2] = y_axis.z;
+
+	m[2][0] = z_axis.x;
+	m[2][1] = z_axis.y;
+	m[2][2] = z_axis.z;
+
+	m[0][3] = -(x_axis * eye);
+	m[1][3] = -(y_axis * eye);
+	m[2][3] = -(z_axis * eye);
+
+	return m;
+}
+
+Matrix4x4 camera_get_light_view_matrix(Vector3f position, Vector3f target, Vector3f UP) {
+	vec3_t up = vec3_new(UP.x, UP.y, UP.z);
+	Matrix4x4 m = matrix4_lookat(position, target, UP);
+	return m;
+}
+
+Matrix4x4 Matrix4_orthographic(float right, float top, float near, float far) {
+	float z_range = far - near;
+	Matrix4x4 m = Matrix4x4::identity();
+	assert(right > 0 && top > 0 && z_range > 0);
+	m[0][0] = 1 / right;
+	m[1][1] = 1 / top;
+	m[2][2] = -2 / z_range;
+	m[2][3] = -(near + far) / z_range;
+	return m;
+}
+
+static Matrix4x4 get_light_proj_matrix(float half_w, float half_h,
+	float z_near, float z_far) {
+	return Matrix4_orthographic(half_w, half_h, z_near, z_far);
+}
 
 int main()
 {
@@ -264,7 +309,7 @@ int main()
 	SpecularShader_old specularShader;
 
 
-	model = new Model("D:\\Development\\Github\\Hana-SoftwareRenderer\\Hana-SoftwareRenderer\\obj\\african_head.obj");
+	model = new Model("D:\\Development\\Github\\Hana-SoftwareRenderer\\Hana-SoftwareRenderer\\obj\\diablo3_pose.obj");
 
 	MaterialProperty mp;
 	mp.diffuse_map = model->get_diffuse_map();
@@ -283,8 +328,9 @@ int main()
 	TextureWithLightShader text_with_light_shader = TextureWithLightShader(draw_data);
 	BlinnShader blinn_shader = BlinnShader(draw_data);
 	NormalMapShader normalmap_shader = NormalMapShader(draw_data);
+	ShadowShader shadowMap = ShadowShader(draw_data);
 
-	Matrial* material = new Matrial(&ground_shader, &mp);
+	Matrial* material = new Matrial(&normalmap_shader, &mp);
 	draw_data->camera = camera;
 	draw_data->matrial = material;
 	draw_data->model = model;
@@ -300,7 +346,7 @@ int main()
 		float delta_time = curr_time - prev_time;
 
 		update_camera(window, camera, &record);
-		ModelView = camera_get_view_matrix(camera);
+		ViewMatrix = camera_get_view_matrix(camera);
 
 		Projection = Matrix4x4::identity();
 
@@ -312,12 +358,19 @@ int main()
 
 		Projection = camera_get_proj_matrix(camera) * m;
 
+		Matrix4x4 m2 = Matrix4x4::identity();
+		//m2[2][2] = -1;
+		//m2[2][3] = -1;
+
 		draw_data->light_dir = light_dir.normalize();
 		draw_data->model_matrix = ModelMatrix;
 		draw_data->model_matrix_I = ModelMatrix.invert();
-		draw_data->view_matrix = ModelView;
+		draw_data->view_matrix = ViewMatrix;
 		draw_data->projection_matrix = Projection;
-		
+		draw_data->light_vp_matrix = get_light_proj_matrix(1, 1, 0, 2) * m2 * camera_get_light_view_matrix(Vector3f(1, 1, 1), Vector3f(0, 0, 0), { 0,1,0 });
+		//draw_data->light_vp_matrix = Projection * camera_get_light_view_matrix(Vector3f(1, 1, 1), Vector3f(0, 0, 0), { 0,1,0 });
+		draw_data->camera_vp_matrix = Projection * ViewMatrix;
+
 
 		//RenderModel("african_head", framebuffer, tangentSpaceNormalmappingShader);
 

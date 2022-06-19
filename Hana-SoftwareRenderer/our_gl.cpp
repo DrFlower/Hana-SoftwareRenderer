@@ -5,7 +5,7 @@
 #include "model.h"
 
 Matrix4x4 ModelMatrix = Matrix4x4::identity();
-Matrix4x4 ModelView;
+Matrix4x4 ViewMatrix;
 Matrix4x4 Viewport;
 Matrix4x4 Projection;
 
@@ -43,7 +43,7 @@ void lookat(Vector3f eye, Vector3f center, Vector3f up) {
 		Minv[2][i] = z[i];
 		Tr[i][3] = -center[i];
 	}
-	ModelView = Minv * Tr;
+	ViewMatrix = Minv * Tr;
 }
 
 bool is_back_facing(Vector3f* ndc_coords) {

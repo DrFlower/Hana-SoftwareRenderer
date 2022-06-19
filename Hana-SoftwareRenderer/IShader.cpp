@@ -128,7 +128,7 @@ shader_struct_v2f NormalMapShader::vertex(shader_struct_a2v* a2v) {
 	shader_struct_v2f v2f;
 	v2f.clip_pos = ObjectToClipPos(a2v->obj_pos);
 	v2f.uv = a2v->uv;
-	v2f.world_pos = proj<3>(ModelMatrix * embed<4>(a2v->obj_pos));
+	v2f.world_pos = ObjectToWorldPos(a2v->obj_pos);
 	v2f.world_normal = ObjectToWorldNormal(a2v->obj_normal);
 	return v2f;
 }
@@ -178,24 +178,13 @@ ShadowShader::ShadowShader(DrawData* dd) :IShader(dd) {};
 
 shader_struct_v2f ShadowShader::vertex(shader_struct_a2v* a2v) {
 	shader_struct_v2f v2f;
-	v2f.clip_pos = ObjectToClipPos(a2v->obj_pos);
-	v2f.world_pos = ObjectToWorldPos(a2v->obj_pos);
-	v2f.world_normal = ObjectToWorldNormal(a2v->obj_normal);
-	v2f.uv = a2v->uv;
+	v2f.clip_pos = ObjectToViewPos(a2v->obj_pos);
 	return v2f;
 }
 
 bool ShadowShader::fragment(shader_struct_v2f* v2f, Color& color) {
-	MaterialProperty* mp = draw_data->matrial->material_property;
-
-	Vector3f worldNormalDir = (v2f->world_normal).normalize();
-	Color albedo = tex_diffuse(v2f->uv) * mp->color;
-	Color ambient = AMBIENT * albedo;
-	Color diffuse = LightColor * albedo * saturate(worldNormalDir * WorldLightDir());
-	Vector3f viewDir = WorldSpaceViewDir(v2f->world_pos).normalize();
-	Vector3f halfDir = (viewDir + WorldLightDir()).normalize();
-	Color spcular = LightColor * mp->specular * std::pow(saturate(worldNormalDir * halfDir), mp->gloss);
-	color = ambient + diffuse + spcular;
+	color = Color::White * ((v2f->clip_pos[2] / 2) );
+	//std::cout << v2f->clip_pos[2] << std::endl;
 	return false;
 }
 

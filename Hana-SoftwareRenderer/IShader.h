@@ -29,11 +29,15 @@ struct DrawData {
 	Model* model;
 	Matrial* matrial;
 	camera_t* camera;
+	bool enable_shadow;
+	TGAImage* shadow_map;
 	Vector3f light_dir;
 	Matrix4x4 model_matrix;
 	Matrix4x4 model_matrix_I;
 	Matrix4x4 view_matrix;
 	Matrix4x4 projection_matrix;
+	Matrix4x4 light_vp_matrix;
+	Matrix4x4 camera_vp_matrix;
 };
 
 
@@ -59,7 +63,11 @@ struct IShader {
 	virtual bool fragment(shader_struct_v2f* v2f, Color& color) = 0;
 
 	Vector4f ObjectToClipPos(Vector3f pos) {
-		return draw_data->projection_matrix * draw_data->view_matrix * draw_data->model_matrix * embed<4>(pos);
+		return draw_data->camera_vp_matrix * draw_data->model_matrix * embed<4>(pos);
+	}
+
+	Vector4f ObjectToViewPos(Vector3f pos) {
+		return draw_data->light_vp_matrix * draw_data->model_matrix * embed<4>(pos);
 	}
 
 	Vector3f ObjectToWorldPos(Vector3f pos) {
