@@ -202,7 +202,7 @@ static void rasterize_triangle(framebuffer* framebuffer, DrawData* appdata, shad
 
 			// fragment shader
 			Color color;
-			bool discard = appdata->matrial->texture_shader->fragment(&interpolate_v2f, color);
+			bool discard = appdata->matrial->shader->fragment(&interpolate_v2f, color);
 
 			// »æÖÆÏñËØ
 			if (!discard) {
@@ -221,7 +221,7 @@ void graphics_draw_triangle(framebuffer* framebuffer, DrawData* appdata) {
 			a2v.obj_pos = appdata->model->vert(i, j);
 			a2v.obj_normal = appdata->model->normal(i, j);
 			a2v.uv = appdata->model->uv(i, j);
-			v2fs[j] = appdata->matrial->texture_shader->vertex(&a2v);
+			v2fs[j] = appdata->matrial->shader->vertex(&a2v);
 		}
 
 		rasterize_triangle(framebuffer, appdata, v2fs);

@@ -272,7 +272,7 @@ int main()
 	mp.specular_map = model->get_specular_map();
 	mp.color = Color::White;
 	mp.specular = Color::White;
-	mp.gloss = 30;
+	mp.gloss = 50;
 	mp.bump_scale = 1;
 
 	DrawData* draw_data = new DrawData();
@@ -284,7 +284,7 @@ int main()
 	BlinnShader blinn_shader = BlinnShader(draw_data);
 	NormalMapShader normalmap_shader = NormalMapShader(draw_data);
 
-	Matrial* material = new Matrial(&normalmap_shader, &mp);
+	Matrial* material = new Matrial(&ground_shader, &mp);
 	draw_data->camera = camera;
 	draw_data->matrial = material;
 	draw_data->model = model;
@@ -311,6 +311,13 @@ int main()
 		m[3][3] = -1;
 
 		Projection = camera_get_proj_matrix(camera) * m;
+
+		draw_data->light_dir = light_dir.normalize();
+		draw_data->model_matrix = ModelMatrix;
+		draw_data->model_matrix_I = ModelMatrix.invert();
+		draw_data->view_matrix = ModelView;
+		draw_data->projection_matrix = Projection;
+		
 
 		//RenderModel("african_head", framebuffer, tangentSpaceNormalmappingShader);
 
