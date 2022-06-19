@@ -165,13 +165,6 @@ static void rasterize_triangle(framebuffer* framebuffer, DrawData* appdata, shad
 	// ±³ÃæÌÞ³ý
 	if (is_back_facing(ndc_coords)) return;
 
-	//
-	//Matrix<4, 3, float> m_clip_coords;
-	//for (int i = 0; i < 3; i++) m_clip_coords.setCol(i, v2f[i].clip_pos);
-	//Matrix<3, 4, float> m_screen_coords = (Viewport * m_clip_coords).transpose(); // transposed to ease access to each of the points
-	//Vector3f screen_coords[3];
-	//for (int i = 0; i < 3; i++) screen_coords[i] = proj<3>(m_screen_coords[i]);
-
 	Vector2f screen_coords[3];
 	float screen_depth[3];
 	for (int i = 0; i < 3; i++) {
@@ -186,11 +179,6 @@ static void rasterize_triangle(framebuffer* framebuffer, DrawData* appdata, shad
 		recip_w[i] = 1 / v2f[i].clip_pos[3];
 	}
 
-
-	//Matrix<3, 2, float> pts2;
-	//for (int i = 0; i < 3; i++) pts2[i] = proj<2>(m_screen_coords[i] / m_screen_coords[i][3]);
-	//for (int i = 0; i < 3; i++) pts2[i] = proj<2>(screen_coords[i]);
-
 	Vector2f bboxmin(std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
 	Vector2f bboxmax(-std::numeric_limits<float>::max(), -std::numeric_limits<float>::max());
 	Vector2f clamp(framebuffer->width - 1, framebuffer->height - 1);
@@ -202,7 +190,6 @@ static void rasterize_triangle(framebuffer* framebuffer, DrawData* appdata, shad
 	}
 
 	Vector2i P;
-
 
 	for (P.x = bboxmin.x; P.x <= bboxmax.x; P.x++) {
 		for (P.y = bboxmin.y; P.y <= bboxmax.y; P.y++) {

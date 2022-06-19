@@ -311,7 +311,6 @@ int main()
 	camera = camera_create(CAMERA_POSITION, CAMERA_TARGET, aspect);
 
 	record = record_t();
-	//memset(&record, 0, sizeof(record_t));
 
 	memset(&callbacks, 0, sizeof(callbacks_t));
 	callbacks.button_callback = button_callback;
@@ -371,9 +370,7 @@ int main()
 		draw_data->view_matrix = ViewMatrix;
 		draw_data->projection_matrix = Projection;
 		draw_data->light_vp_matrix = get_light_proj_matrix(aspect, 1, 0, 2) * camera_get_light_view_matrix(Vector3f(1, 1, 1), Vector3f(0, 0, 0), { 0, 1, 0 });
-		//draw_data->light_vp_matrix = Projection * camera_get_light_view_matrix(Vector3f(1, 1, 1), Vector3f(0, 0, 0), { 0,1,0 });
 		draw_data->camera_vp_matrix = Projection * ViewMatrix;
-
 
 		//RenderModel("african_head", framebuffer, tangentSpaceNormalmappingShader);
 

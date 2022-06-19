@@ -183,20 +183,8 @@ shader_struct_v2f ShadowShader::vertex(shader_struct_a2v* a2v) {
 }
 
 bool ShadowShader::fragment(shader_struct_v2f* v2f, Color& color) {
-	//float factor = v2f->clip_pos[2];
-	//float factor = v2f->clip_pos[2] / 2;
-	//float factor = v2f->clip_pos[2] / v2f->clip_pos[3];
-	//float factor = v2f->clip_pos[2] / v2f->clip_pos[3] -1;
-	//float factor = (v2f->clip_pos[2] - 1) / 2;
-	//float factor = (4 - v2f->clip_pos[2]) / 2;
 	float factor = 1 - v2f->clip_pos[2];
-
-	//float factor =  v2f->clip_pos[2] / v2f->clip_pos[3];
-	//factor = 1 - v2f->clip_pos[2];
-
 	color = Color::White * factor;
-
-	//std::cout << factor << std::endl;
 	return false;
 }
 

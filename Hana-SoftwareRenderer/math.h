@@ -133,16 +133,6 @@ public:
 		for (size_t i = ROW_SIZE; i--; rows[i][idx] = v[i]);
 	}
 
-	//µ•Œªæÿ’Û
-	//static Matrix<ROW_SIZE, COL_SIZE, T> identity() {
-	//	assert(ROW_SIZE == COL_SIZE);
-	//	Matrix<ROW_SIZE, COL_SIZE, T> ret;
-	//	for (size_t i = 0; i < ROW_SIZE; i++)
-	//	{
-	//		ret[i][i] = 1;
-	//	}
-	//	return ret;
-	//}
 	static Matrix<ROW_SIZE, COL_SIZE, T> identity() {
 		Matrix<ROW_SIZE, COL_SIZE, T> ret;
 		for (size_t i = ROW_SIZE; i--; )
