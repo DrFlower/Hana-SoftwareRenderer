@@ -12,7 +12,7 @@
 #include "IShader.h"
 
 static const char* const WINDOW_TITLE = "Hana-SoftwareRenderer";
-static const int WINDOW_WIDTH = 800;
+static const int WINDOW_WIDTH = 1000;
 static const int WINDOW_HEIGHT = 600;
 
 Model* model = NULL;
@@ -253,20 +253,36 @@ Matrix4x4 camera_get_light_view_matrix(Vector3f position, Vector3f target, Vecto
 	return m;
 }
 
-Matrix4x4 Matrix4_orthographic(float right, float top, float near, float far) {
+//Matrix4x4 Matrix4_orthographic(float right, float top, float near, float far) {
+//	float z_range = far - near;
+//	Matrix4x4 m = Matrix4x4::identity();
+//	assert(right > 0 && top > 0 && z_range > 0);
+//	m[0][0] = 1 / right;
+//	m[1][1] = 1 / top;
+//	m[2][2] = -2 / z_range;
+//	m[2][3] = -(near + far) / z_range;
+//	return m;
+//}
+//
+//static Matrix4x4 get_light_proj_matrix(float half_w, float half_h,
+//	float z_near, float z_far) {
+//	return Matrix4_orthographic(half_w, half_h, z_near, z_far);
+//}
+
+Matrix4x4 Matrix4_orthographic(float aspect, float size, float near, float far) {
 	float z_range = far - near;
 	Matrix4x4 m = Matrix4x4::identity();
 	assert(right > 0 && top > 0 && z_range > 0);
-	m[0][0] = 1 / right;
-	m[1][1] = 1 / top;
+	m[0][0] = 1 / aspect * size;
+	m[1][1] = 1 / size;
 	m[2][2] = -2 / z_range;
 	m[2][3] = -(near + far) / z_range;
 	return m;
 }
 
-static Matrix4x4 get_light_proj_matrix(float half_w, float half_h,
+static Matrix4x4 get_light_proj_matrix(float aspect, float size,
 	float z_near, float z_far) {
-	return Matrix4_orthographic(half_w, half_h, z_near, z_far);
+	return Matrix4_orthographic(aspect, size, z_near, z_far);
 }
 
 int main()
@@ -283,7 +299,7 @@ int main()
 	int num_frames;
 
 	//lookat(eye, center, up);
-	viewport(WINDOW_WIDTH / 8, WINDOW_HEIGHT / 8, WINDOW_WIDTH * 3 / 4, WINDOW_HEIGHT * 3 / 4);
+	//viewport(WINDOW_WIDTH / 8, WINDOW_HEIGHT / 8, WINDOW_WIDTH * 3 / 4, WINDOW_HEIGHT * 3 / 4);
 	//projection(-1.f / (eye - center).normal());
 
 
@@ -330,7 +346,7 @@ int main()
 	NormalMapShader normalmap_shader = NormalMapShader(draw_data);
 	ShadowShader shadowMap = ShadowShader(draw_data);
 
-	Matrial* material = new Matrial(&normalmap_shader, &mp);
+	Matrial* material = new Matrial(&shadowMap, &mp);
 	draw_data->camera = camera;
 	draw_data->matrial = material;
 	draw_data->model = model;
@@ -351,23 +367,26 @@ int main()
 		Projection = Matrix4x4::identity();
 
 		Matrix4x4 m = Matrix4x4::identity();
-		m[0][0] = -1;
-		m[1][1] = -1;
-		m[2][2] = -1;
+		//m[0][0] = -1;
+		//m[1][1] = -1;
+		//m[2][2] = -1;
 		m[3][3] = -1;
 
 		Projection = camera_get_proj_matrix(camera) * m;
 
 		Matrix4x4 m2 = Matrix4x4::identity();
+		m2[0][0] = -1;
+		m2[1][1] = -1;
 		//m2[2][2] = -1;
 		//m2[2][3] = -1;
+		m2[3][3] = -1;
 
 		draw_data->light_dir = light_dir.normalize();
 		draw_data->model_matrix = ModelMatrix;
 		draw_data->model_matrix_I = ModelMatrix.invert();
 		draw_data->view_matrix = ViewMatrix;
 		draw_data->projection_matrix = Projection;
-		draw_data->light_vp_matrix = get_light_proj_matrix(1, 1, 0, 2) * m2 * camera_get_light_view_matrix(Vector3f(1, 1, 1), Vector3f(0, 0, 0), { 0,1,0 });
+		draw_data->light_vp_matrix = (get_light_proj_matrix(aspect, 1, 0, 2) * m2) * camera_get_light_view_matrix(Vector3f(1, 1, 1), Vector3f(0, 0, 0), { 0, 1, 0 });
 		//draw_data->light_vp_matrix = Projection * camera_get_light_view_matrix(Vector3f(1, 1, 1), Vector3f(0, 0, 0), { 0,1,0 });
 		draw_data->camera_vp_matrix = Projection * ViewMatrix;
 

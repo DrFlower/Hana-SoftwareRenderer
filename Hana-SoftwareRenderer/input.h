@@ -5,7 +5,7 @@
 #include "platform.h"
 #include "camera.h"
 
-static const Vector3f CAMERA_POSITION = { 0, 0, 1.5f };
+static const Vector3f CAMERA_POSITION = { 0, 0, 2.f };
 static const Vector3f CAMERA_TARGET = { 0, 0, 0 };
 
 static const float CLICK_DELAY = 0.25f;

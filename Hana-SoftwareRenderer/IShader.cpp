@@ -172,7 +172,7 @@ bool NormalMapShader::fragment(shader_struct_v2f* v2f, Color& color) {
 
 
 
-//¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý BlinnShader ¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý
+//¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý ShadowShader ¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý
 
 ShadowShader::ShadowShader(DrawData* dd) :IShader(dd) {};
 
@@ -183,9 +183,16 @@ shader_struct_v2f ShadowShader::vertex(shader_struct_a2v* a2v) {
 }
 
 bool ShadowShader::fragment(shader_struct_v2f* v2f, Color& color) {
-	color = Color::White * ((v2f->clip_pos[2] / 2) );
-	//std::cout << v2f->clip_pos[2] << std::endl;
+	//float factor = v2f->clip_pos[2];
+	//float factor = v2f->clip_pos[2] / 2;
+	//float factor = v2f->clip_pos[2] / v2f->clip_pos[3];
+	//float factor = v2f->clip_pos[2] / v2f->clip_pos[3] -1;
+	//float factor = (v2f->clip_pos[2] - 1) / 2;
+	float factor = (4 - v2f->clip_pos[2]) / 2;
+	color = Color::White * factor;
+
+	//std::cout << factor << std::endl;
 	return false;
 }
 
-//¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü BlinnShader ¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü
+//¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü ShadowShader ¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü¡ü

@@ -89,11 +89,11 @@ static bool is_back_facing(Vector3f* ndc_coords) {
  * for depth interpolation, see subsection 3.5.1 of
  * https://www.khronos.org/registry/OpenGL/specs/es/2.0/es_full_spec_2.0.pdf
  */
-static float interpolate_depth(Vector3f* screen_coords, Vector3f weights) {
+static float interpolate_depth(float* screen_depths, Vector3f weights) {
 	Vector3f screen_depth;
 	for (size_t i = 0; i < 3; i++)
 	{
-		screen_depth[i] = screen_coords[i].z;
+		screen_depth[i] = screen_depths[i];
 	}
 
 	return screen_depth * weights;
@@ -166,11 +166,19 @@ static void rasterize_triangle(framebuffer* framebuffer, DrawData* appdata, shad
 	if (is_back_facing(ndc_coords)) return;
 
 	//
-	Matrix<4, 3, float> m_clip_coords;
-	for (int i = 0; i < 3; i++) m_clip_coords.setCol(i, v2f[i].clip_pos);
-	Matrix<3, 4, float> m_screen_coords = (Viewport * m_clip_coords).transpose(); // transposed to ease access to each of the points
-	Vector3f screen_coords[3];
-	for (int i = 0; i < 3; i++) screen_coords[i] = proj<3>(m_screen_coords[i]);
+	//Matrix<4, 3, float> m_clip_coords;
+	//for (int i = 0; i < 3; i++) m_clip_coords.setCol(i, v2f[i].clip_pos);
+	//Matrix<3, 4, float> m_screen_coords = (Viewport * m_clip_coords).transpose(); // transposed to ease access to each of the points
+	//Vector3f screen_coords[3];
+	//for (int i = 0; i < 3; i++) screen_coords[i] = proj<3>(m_screen_coords[i]);
+
+	Vector2f screen_coords[3];
+	float screen_depth[3];
+	for (int i = 0; i < 3; i++) {
+		Vector3f win_coord = viewport_transform(framebuffer->width, framebuffer->height, ndc_coords[i]);
+		screen_coords[i] = Vector2f(win_coord.x, win_coord.y);
+		screen_depth[i] = win_coord.z;
+	}
 
 	float recip_w[3];
 	/* reciprocals of w */
@@ -179,8 +187,8 @@ static void rasterize_triangle(framebuffer* framebuffer, DrawData* appdata, shad
 	}
 
 
-	Matrix<3, 2, float> pts2;
-	for (int i = 0; i < 3; i++) pts2[i] = proj<2>(m_screen_coords[i] / m_screen_coords[i][3]);
+	//Matrix<3, 2, float> pts2;
+	//for (int i = 0; i < 3; i++) pts2[i] = proj<2>(m_screen_coords[i] / m_screen_coords[i][3]);
 	//for (int i = 0; i < 3; i++) pts2[i] = proj<2>(screen_coords[i]);
 
 	Vector2f bboxmin(std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
@@ -188,8 +196,8 @@ static void rasterize_triangle(framebuffer* framebuffer, DrawData* appdata, shad
 	Vector2f clamp(framebuffer->width - 1, framebuffer->height - 1);
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < 2; j++) {
-			bboxmin[j] = std::max(0.f, std::min(bboxmin[j], pts2[i][j]));
-			bboxmax[j] = std::min(clamp[j], std::max(bboxmax[j], pts2[i][j]));
+			bboxmin[j] = std::max(0.f, std::min(bboxmin[j], screen_coords[i][j]));
+			bboxmax[j] = std::min(clamp[j], std::max(bboxmax[j], screen_coords[i][j]));
 		}
 	}
 
@@ -198,11 +206,11 @@ static void rasterize_triangle(framebuffer* framebuffer, DrawData* appdata, shad
 
 	for (P.x = bboxmin.x; P.x <= bboxmax.x; P.x++) {
 		for (P.y = bboxmin.y; P.y <= bboxmax.y; P.y++) {
-			Vector3f barycentric_weights = barycentric(pts2[0], pts2[1], pts2[2], P);
+			Vector3f barycentric_weights = barycentric(screen_coords[0], screen_coords[1], screen_coords[2], P);
 			if (barycentric_weights.x < 0 || barycentric_weights.y < 0 || barycentric_weights.z < 0) continue;
 
 			// 深度插值
-			float frag_depth = interpolate_depth(screen_coords, barycentric_weights);
+			float frag_depth = interpolate_depth(screen_depth, barycentric_weights);
 
 			// 深度测试
 			if (framebuffer->get_depth(P.x, P.y) > frag_depth) continue;
