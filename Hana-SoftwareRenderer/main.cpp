@@ -332,7 +332,7 @@ int main()
 	NormalMapShader normalmap_shader = NormalMapShader();
 	ShadowShader shadow_shader = ShadowShader();
 
-	bool enable_shadow = false;
+	bool enable_shadow = true;
 
 	DrawData* shadow_draw_data = NULL;
 	DrawData* draw_data = new DrawData();
