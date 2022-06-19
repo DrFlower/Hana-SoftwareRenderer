@@ -99,7 +99,7 @@ Vector3f barycentric(Vector2f A, Vector2f B, Vector2f C, Vector2f P) {
 	return Vector3f(-1, 1, 1); // in this case generate negative coordinates, it will be thrown away by the rasterizator
 }
 
-void triangle(Matrix<4, 3, float>& clip_coords, Model* model, IShader_old& shader, framebuffer* frameBuffer) {
+void triangle(Matrix<4, 3, float>& clip_coords, Model* model, IShader_old& shader, renderbuffer* frameBuffer) {
 	Matrix<3, 4, float> pts = (Viewport * clip_coords).transpose(); // transposed to ease access to each of the points
 
 	Vector3f screen_coords[3];

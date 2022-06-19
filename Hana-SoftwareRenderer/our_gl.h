@@ -28,7 +28,7 @@ struct IShader_old {
 	virtual bool fragment(Model* model, Vector3f bar, TGAColor& color) = 0;
 };
 
-void triangle(Matrix<4, 3, float>& clipc, Model* model, IShader_old& shader, framebuffer* framebuffer);
+void triangle(Matrix<4, 3, float>& clipc, Model* model, IShader_old& shader, renderbuffer* framebuffer);
 
 #endif //__OUR_GL_H__
 

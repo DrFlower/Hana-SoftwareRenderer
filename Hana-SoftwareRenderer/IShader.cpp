@@ -3,8 +3,6 @@
 
 //¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý GroundShader ¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý
 
-GroundShader::GroundShader(DrawData* dd) :IShader(dd) {};
-
 shader_struct_v2f GroundShader::vertex(shader_struct_a2v* a2v) {
 	shader_struct_v2f v2f;
 	v2f.clip_pos = ObjectToClipPos(a2v->obj_pos);
@@ -22,8 +20,6 @@ bool GroundShader::fragment(shader_struct_v2f* v2f, Color& color) {
 
 
 //¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý ToonShader ¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý
-
-ToonShader::ToonShader(DrawData* dd) :IShader(dd) {};
 
 shader_struct_v2f ToonShader::vertex(shader_struct_a2v* a2v) {
 	shader_struct_v2f v2f;
@@ -49,8 +45,6 @@ bool ToonShader::fragment(shader_struct_v2f* v2f, Color& color) {
 
 //¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý TextureShader ¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý
 
-TextureShader::TextureShader(DrawData* dd) :IShader(dd) {};
-
 shader_struct_v2f TextureShader::vertex(shader_struct_a2v* a2v) {
 	shader_struct_v2f v2f;
 	v2f.clip_pos = ObjectToClipPos(a2v->obj_pos);
@@ -68,8 +62,6 @@ bool TextureShader::fragment(shader_struct_v2f* v2f, Color& color) {
 
 
 //¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý TextureWithLightShader ¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý
-
-TextureWithLightShader::TextureWithLightShader(DrawData* dd) :IShader(dd) {};
 
 shader_struct_v2f TextureWithLightShader::vertex(shader_struct_a2v* a2v) {
 	shader_struct_v2f v2f;
@@ -91,8 +83,6 @@ bool TextureWithLightShader::fragment(shader_struct_v2f* v2f, Color& color) {
 
 //¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý BlinnShader ¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý
 
-BlinnShader::BlinnShader(DrawData* dd) :IShader(dd) {};
-
 shader_struct_v2f BlinnShader::vertex(shader_struct_a2v* a2v) {
 	shader_struct_v2f v2f;
 	v2f.clip_pos = ObjectToClipPos(a2v->obj_pos);
@@ -103,16 +93,19 @@ shader_struct_v2f BlinnShader::vertex(shader_struct_a2v* a2v) {
 }
 
 bool BlinnShader::fragment(shader_struct_v2f* v2f, Color& color) {
-	MaterialProperty* mp = draw_data->matrial->material_property;
-
 	Vector3f worldNormalDir = (v2f->world_normal).normalize();
-	Color albedo = tex_diffuse(v2f->uv) * mp->color;
+	Color albedo = tex_diffuse(v2f->uv) * shader_data->matrial->color;
 	Color ambient = AMBIENT * albedo;
-	Color diffuse = LightColor * albedo * saturate(worldNormalDir * WorldLightDir());
+	float n_dot_l = saturate(worldNormalDir * WorldLightDir());
+	Color diffuse = LightColor * albedo * n_dot_l;
 	Vector3f viewDir = WorldSpaceViewDir(v2f->world_pos).normalize();
 	Vector3f halfDir = (viewDir + WorldLightDir()).normalize();
-	Color spcular = LightColor * mp->specular * std::pow(saturate(worldNormalDir * halfDir), mp->gloss);
-	color = ambient + diffuse + spcular;
+	Color spcular = LightColor * shader_data->matrial->specular * std::pow(saturate(worldNormalDir * halfDir), shader_data->matrial->gloss);
+
+	Vector4f depth_pos = shader_data->light_vp_matrix * embed<4>(v2f->world_pos);
+	int shadow = is_in_shadow(depth_pos, n_dot_l);
+
+	color = ambient + (diffuse + spcular) * shadow;
 	return false;
 }
 
@@ -121,8 +114,6 @@ bool BlinnShader::fragment(shader_struct_v2f* v2f, Color& color) {
 
 
 //¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý NormalMapShader ¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý
-
-NormalMapShader::NormalMapShader(DrawData* dd) :IShader(dd) {};
 
 shader_struct_v2f NormalMapShader::vertex(shader_struct_a2v* a2v) {
 	shader_struct_v2f v2f;
@@ -134,8 +125,6 @@ shader_struct_v2f NormalMapShader::vertex(shader_struct_a2v* a2v) {
 }
 
 bool NormalMapShader::fragment(shader_struct_v2f* v2f, Color& color) {
-	MaterialProperty* mp = draw_data->matrial->material_property;
-
 	Vector3f normal = v2f->world_normal;
 
 	float x = normal.x;
@@ -151,20 +140,25 @@ bool NormalMapShader::fragment(shader_struct_v2f* v2f, Color& color) {
 	TBN[2] = Vector3f(t.z, b.z, normal.z);
 
 	Vector3f bump = tex_normal(v2f->uv);
-	bump.x = bump.x * mp->bump_scale;
-	bump.y = bump.y * mp->bump_scale;
+	bump.x = bump.x * shader_data->matrial->bump_scale;
+	bump.y = bump.y * shader_data->matrial->bump_scale;
 	bump.z = sqrt(1.0 - saturate(Vector2f(bump.x, bump.y) * Vector2f(bump.x, bump.y)));
 
 	normal = (TBN * bump).normalize();
 
 	Vector3f worldNormalDir = normal;
-	Color albedo = tex_diffuse(v2f->uv) * mp->color;
+	Color albedo = tex_diffuse(v2f->uv) * shader_data->matrial->color;
 	Color ambient = AMBIENT * albedo;
-	Color diffuse = LightColor * albedo * saturate(worldNormalDir * WorldLightDir());
+	float n_dot_l = saturate(worldNormalDir * WorldLightDir());
+	Color diffuse = LightColor * albedo * n_dot_l;
 	Vector3f viewDir = WorldSpaceViewDir(v2f->world_pos).normalize();
 	Vector3f halfDir = (viewDir + WorldLightDir()).normalize();
-	Color spcular = LightColor * mp->specular * std::pow(saturate(worldNormalDir * halfDir), mp->gloss);
-	color = ambient + diffuse + spcular;
+	Color spcular = LightColor * shader_data->matrial->specular * std::pow(saturate(worldNormalDir * halfDir), shader_data->matrial->gloss);
+
+	Vector4f depth_pos = shader_data->light_vp_matrix * embed<4>(v2f->world_pos);
+	int shadow = is_in_shadow(depth_pos, n_dot_l);
+
+	color = ambient + (diffuse + spcular) * shadow;
 	return false;
 }
 
@@ -174,8 +168,6 @@ bool NormalMapShader::fragment(shader_struct_v2f* v2f, Color& color) {
 
 //¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý ShadowShader ¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý
 
-ShadowShader::ShadowShader(DrawData* dd) :IShader(dd) {};
-
 shader_struct_v2f ShadowShader::vertex(shader_struct_a2v* a2v) {
 	shader_struct_v2f v2f;
 	v2f.clip_pos = ObjectToViewPos(a2v->obj_pos);
@@ -183,7 +175,7 @@ shader_struct_v2f ShadowShader::vertex(shader_struct_a2v* a2v) {
 }
 
 bool ShadowShader::fragment(shader_struct_v2f* v2f, Color& color) {
-	float factor = 1 - v2f->clip_pos[2];
+	float factor = v2f->clip_pos[2];
 	color = Color::White * factor;
 	return false;
 }

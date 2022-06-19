@@ -22,7 +22,7 @@ void window_destroy(window_t *window);
 int window_should_close(window_t *window);
 void window_set_userdata(window_t *window, void *userdata);
 void *window_get_userdata(window_t *window);
-void window_draw_buffer(window_t *window, framebuffer *buffer);
+void window_draw_buffer(window_t *window, renderbuffer *buffer);
 
 /* input related functions */
 void input_poll_events(void);

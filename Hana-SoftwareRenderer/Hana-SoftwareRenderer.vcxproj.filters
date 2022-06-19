@@ -62,6 +62,9 @@
     <ClCompile Include="color.cpp">
       <Filter>core</Filter>
     </ClCompile>
+    <ClCompile Include="renderbuffer.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="platform.h">
@@ -101,6 +104,12 @@
       <Filter>math</Filter>
     </ClInclude>
     <ClInclude Include="color.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="drawdata.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="renderbuffer.h">
       <Filter>core</Filter>
     </ClInclude>
   </ItemGroup>

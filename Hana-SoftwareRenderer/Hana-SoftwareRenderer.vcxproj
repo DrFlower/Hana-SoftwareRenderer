@@ -140,12 +140,14 @@
     <ClCompile Include="model.cpp" />
     <ClCompile Include="our_gl.cpp" />
     <ClCompile Include="IShader.cpp" />
+    <ClCompile Include="renderbuffer.cpp" />
     <ClCompile Include="tgaimage.cpp" />
     <ClCompile Include="win32.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="camera.h" />
     <ClInclude Include="color.h" />
+    <ClInclude Include="drawdata.h" />
     <ClInclude Include="graphics.h" />
     <ClInclude Include="image.h" />
     <ClInclude Include="input.h" />
@@ -156,6 +158,7 @@
     <ClInclude Include="our_gl.h" />
     <ClInclude Include="platform.h" />
     <ClInclude Include="math.h" />
+    <ClInclude Include="renderbuffer.h" />
     <ClInclude Include="tgaimage.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

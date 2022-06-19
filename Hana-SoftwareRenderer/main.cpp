@@ -10,6 +10,7 @@
 #include "camera.h"
 #include "input.h"
 #include "IShader.h"
+#include "drawdata.h"
 
 static const char* const WINDOW_TITLE = "Hana-SoftwareRenderer";
 static const int WINDOW_WIDTH = 1000;
@@ -204,7 +205,7 @@ struct SpecularShader_old : public IShader_old
 	}
 };
 
-void RenderModel(std::string modelName, framebuffer* framebuffer, IShader_old& shader)
+void RenderModel(std::string modelName, renderbuffer* framebuffer, IShader_old& shader)
 {
 	if (!model)
 	{
@@ -253,22 +254,6 @@ Matrix4x4 camera_get_light_view_matrix(Vector3f position, Vector3f target, Vecto
 	return m;
 }
 
-//Matrix4x4 Matrix4_orthographic(float right, float top, float near, float far) {
-//	float z_range = far - near;
-//	Matrix4x4 m = Matrix4x4::identity();
-//	assert(right > 0 && top > 0 && z_range > 0);
-//	m[0][0] = 1 / right;
-//	m[1][1] = 1 / top;
-//	m[2][2] = -2 / z_range;
-//	m[2][3] = -(near + far) / z_range;
-//	return m;
-//}
-//
-//static Matrix4x4 get_light_proj_matrix(float half_w, float half_h,
-//	float z_near, float z_far) {
-//	return Matrix4_orthographic(half_w, half_h, z_near, z_far);
-//}
-
 Matrix4x4 Matrix4_orthographic(float aspect, float size, float near, float far) {
 	float z_range = far - near;
 	Matrix4x4 m = Matrix4x4::identity();
@@ -289,7 +274,8 @@ int main()
 {
 	platform_initialize();
 	window_t* window;
-	framebuffer* framebuffer;
+	renderbuffer* framebuffer = nullptr;
+	renderbuffer* shdaow_map = nullptr;
 	camera_t* camera;
 	record_t record;
 	callbacks_t callbacks;
@@ -306,7 +292,7 @@ int main()
 	light_dir.normalize();
 
 	window = window_create(WINDOW_TITLE, WINDOW_WIDTH, WINDOW_HEIGHT);
-	framebuffer = framebuffer_create(WINDOW_WIDTH, WINDOW_HEIGHT);
+	framebuffer = renderbuffer_create(WINDOW_WIDTH, WINDOW_HEIGHT);
 	aspect = (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT;
 	camera = camera_create(CAMERA_POSITION, CAMERA_TARGET, aspect);
 
@@ -326,29 +312,36 @@ int main()
 
 	model = new Model("D:\\Development\\Github\\Hana-SoftwareRenderer\\Hana-SoftwareRenderer\\obj\\diablo3_pose.obj");
 
-	MaterialProperty mp;
-	mp.diffuse_map = model->get_diffuse_map();
-	mp.normal_map = model->get_normal_map();
-	mp.specular_map = model->get_specular_map();
-	mp.color = Color::White;
-	mp.specular = Color::White;
-	mp.gloss = 50;
-	mp.bump_scale = 1;
+	Matrial material;
+	material.diffuse_map = model->get_diffuse_map();
+	material.normal_map = model->get_normal_map();
+	material.specular_map = model->get_specular_map();
+	material.color = Color::White;
+	material.specular = Color::White;
+	material.gloss = 50;
+	material.bump_scale = 1;
 
+	ShaderData* shader_data = new ShaderData();
+	shader_data->matrial = &material;
+
+	GroundShader ground_shader = GroundShader();
+	ToonShader toon_shader = ToonShader();
+	TextureShader texture_shader = TextureShader();
+	TextureWithLightShader text_with_light_shader = TextureWithLightShader();
+	BlinnShader blinn_shader = BlinnShader();
+	NormalMapShader normalmap_shader = NormalMapShader();
+	ShadowShader shadow_shader = ShadowShader();
+
+	bool enable_shadow = false;
+
+	DrawData* shadow_draw_data = NULL;
 	DrawData* draw_data = new DrawData();
 
-	GroundShader ground_shader = GroundShader(draw_data);
-	ToonShader toon_shader = ToonShader(draw_data);
-	TextureShader texture_shader = TextureShader(draw_data);
-	TextureWithLightShader text_with_light_shader = TextureWithLightShader(draw_data);
-	BlinnShader blinn_shader = BlinnShader(draw_data);
-	NormalMapShader normalmap_shader = NormalMapShader(draw_data);
-	ShadowShader shadowMap = ShadowShader(draw_data);
 
-	Matrial* material = new Matrial(&normalmap_shader, &mp);
-	draw_data->camera = camera;
-	draw_data->matrial = material;
 	draw_data->model = model;
+	draw_data->shader = &normalmap_shader;
+	draw_data->shader->shader_data = shader_data;
+	draw_data->renderbuffer = framebuffer;
 
 	window_set_userdata(window, &record);
 	input_set_callbacks(window, callbacks);
@@ -364,17 +357,34 @@ int main()
 		ViewMatrix = camera_get_view_matrix(camera);
 		Projection = camera_get_proj_matrix(camera);
 
-		draw_data->light_dir = light_dir.normalize();
-		draw_data->model_matrix = ModelMatrix;
-		draw_data->model_matrix_I = ModelMatrix.invert();
-		draw_data->view_matrix = ViewMatrix;
-		draw_data->projection_matrix = Projection;
-		draw_data->light_vp_matrix = get_light_proj_matrix(aspect, 1, 0, 2) * camera_get_light_view_matrix(Vector3f(1, 1, 1), Vector3f(0, 0, 0), { 0, 1, 0 });
-		draw_data->camera_vp_matrix = Projection * ViewMatrix;
+		shader_data->view_Pos = camera_get_position(camera);
+		shader_data->light_dir = light_dir.normalize();
+		shader_data->model_matrix = ModelMatrix;
+		shader_data->model_matrix_I = ModelMatrix.invert();
+		shader_data->view_matrix = ViewMatrix;
+		shader_data->projection_matrix = Projection;
+		shader_data->light_vp_matrix = get_light_proj_matrix(aspect, 1, 0, 5) * camera_get_light_view_matrix(Vector3f(1, 1, 1), Vector3f(0, 0, 0), { 0, 1, 0 });
+		shader_data->camera_vp_matrix = Projection * ViewMatrix;
+
+		if (enable_shadow)
+		{
+			if (!shadow_draw_data)
+			{
+				shdaow_map = renderbuffer_create(WINDOW_WIDTH, WINDOW_HEIGHT);
+				shadow_draw_data = new DrawData();
+				shadow_draw_data->model = model;
+				shadow_draw_data->shader = &shadow_shader;
+				shadow_draw_data->shader->shader_data = shader_data;
+				shadow_draw_data->renderbuffer = shdaow_map;
+			}
+
+			graphics_draw_triangle(shadow_draw_data);
+			shader_data->shadow_map = shdaow_map;
+		}
 
 		//RenderModel("african_head", framebuffer, tangentSpaceNormalmappingShader);
 
-		graphics_draw_triangle(framebuffer, draw_data);
+		graphics_draw_triangle(draw_data);
 
 		window_draw_buffer(window, framebuffer);
 		num_frames += 1;
@@ -393,8 +403,14 @@ int main()
 		record.single_click = 0;
 		record.double_click = 0;
 
-		framebuffer_clear_color(framebuffer, vec4_t());
-		framebuffer_clear_depth(framebuffer, std::numeric_limits<float>::max());
+		renderbuffer_clear_color(framebuffer, Color::Black);
+		renderbuffer_clear_depth(framebuffer, std::numeric_limits<float>::max());
+
+		if (enable_shadow)
+		{
+			renderbuffer_clear_color(shdaow_map, Color::Black);
+			renderbuffer_clear_depth(shdaow_map, std::numeric_limits<float>::max());
+		}
 
 		input_poll_events();
 	}
@@ -404,10 +420,15 @@ int main()
 		delete model;
 	}
 
-	delete material;
-	delete draw_data;
+	if (shadow_draw_data)
+	{
+		delete shadow_draw_data;
+	}
+
+	delete shader_data;
 
 	window_destroy(window);
-	framebuffer_release(framebuffer);
+	renderbuffer_release(framebuffer);
+	if (shdaow_map) renderbuffer_release(shdaow_map);
 	camera_release(camera);
 }

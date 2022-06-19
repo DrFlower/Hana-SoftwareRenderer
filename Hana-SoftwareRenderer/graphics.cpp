@@ -5,55 +5,7 @@
 #include "graphics.h"
 #include "macro.h"
 #include "maths.h"
-#include "IShader.h"
 #include "our_gl.h"
-
-/* framebuffer management */
-
-framebuffer* framebuffer_create(int width, int height) {
-	int color_buffer_size = width * height * 4;
-	int depth_buffer_size = sizeof(float) * width * height;
-	vec4_t default_color = { 0, 0, 0, 1 };
-	float default_depth = 1;
-	framebuffer* fb = new framebuffer();
-
-	assert(width > 0 && height > 0);
-
-	fb->width = width;
-	fb->height = height;
-	fb->color_buffer = (unsigned char*)malloc(color_buffer_size);
-	fb->depth_buffer = (float*)malloc(depth_buffer_size);
-
-	framebuffer_clear_color(fb, default_color);
-	framebuffer_clear_depth(fb, default_depth);
-
-	return fb;
-}
-
-void framebuffer_release(framebuffer* framebuffer) {
-	free(framebuffer->color_buffer);
-	free(framebuffer->depth_buffer);
-	free(framebuffer);
-}
-
-void framebuffer_clear_color(framebuffer* framebuffer, vec4_t color) {
-	int num_pixels = framebuffer->width * framebuffer->height;
-	int i;
-	for (i = 0; i < num_pixels; i++) {
-		framebuffer->color_buffer[i * 4 + 0] = float_to_uchar(color.x);
-		framebuffer->color_buffer[i * 4 + 1] = float_to_uchar(color.y);
-		framebuffer->color_buffer[i * 4 + 2] = float_to_uchar(color.z);
-		framebuffer->color_buffer[i * 4 + 3] = float_to_uchar(color.w);
-	}
-}
-
-void framebuffer_clear_depth(framebuffer* framebuffer, float depth) {
-	int num_pixels = framebuffer->width * framebuffer->height;
-	int i;
-	for (i = 0; i < num_pixels; i++) {
-		framebuffer->depth_buffer[i] = depth;
-	}
-}
 
 /*
  * for viewport transformation, see subsection 2.12.1 of
@@ -156,7 +108,9 @@ static Vector3f barycentric(Vector2f A, Vector2f B, Vector2f C, Vector2f P) {
 	return Vector3f(-1, 1, 1); // in this case generate negative coordinates, it will be thrown away by the rasterizator
 }
 
-static void rasterize_triangle(framebuffer* framebuffer, DrawData* appdata, shader_struct_v2f* v2f) {
+static void rasterize_triangle(DrawData* draw_data, shader_struct_v2f* v2f) {
+
+	renderbuffer* render_buffer = draw_data->renderbuffer;
 
 	// 齐次除法 / 透视除法 (homogeneous division / perspective division)
 	Vector3f ndc_coords[3];
@@ -168,7 +122,7 @@ static void rasterize_triangle(framebuffer* framebuffer, DrawData* appdata, shad
 	Vector2f screen_coords[3];
 	float screen_depth[3];
 	for (int i = 0; i < 3; i++) {
-		Vector3f win_coord = viewport_transform(framebuffer->width, framebuffer->height, ndc_coords[i]);
+		Vector3f win_coord = viewport_transform(render_buffer->width, render_buffer->height, ndc_coords[i]);
 		screen_coords[i] = Vector2f(win_coord.x, win_coord.y);
 		screen_depth[i] = win_coord.z;
 	}
@@ -181,7 +135,7 @@ static void rasterize_triangle(framebuffer* framebuffer, DrawData* appdata, shad
 
 	Vector2f bboxmin(std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
 	Vector2f bboxmax(-std::numeric_limits<float>::max(), -std::numeric_limits<float>::max());
-	Vector2f clamp(framebuffer->width - 1, framebuffer->height - 1);
+	Vector2f clamp(render_buffer->width - 1, render_buffer->height - 1);
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < 2; j++) {
 			bboxmin[j] = std::max(0.f, std::min(bboxmin[j], screen_coords[i][j]));
@@ -200,7 +154,7 @@ static void rasterize_triangle(framebuffer* framebuffer, DrawData* appdata, shad
 			float frag_depth = interpolate_depth(screen_depth, barycentric_weights);
 
 			// 深度测试
-			if (frag_depth > framebuffer->get_depth(P.x, P.y)) continue;
+			if (frag_depth > render_buffer->get_depth(P.x, P.y)) continue;
 
 			// 变量插值
 			shader_struct_v2f interpolate_v2f;
@@ -208,28 +162,28 @@ static void rasterize_triangle(framebuffer* framebuffer, DrawData* appdata, shad
 
 			// fragment shader
 			Color color;
-			bool discard = appdata->matrial->shader->fragment(&interpolate_v2f, color);
+			bool discard = draw_data->shader->fragment(&interpolate_v2f, color);
 
 			// 绘制像素
 			if (!discard) {
-				framebuffer->set_depth(P.x, P.y, frag_depth);
-				framebuffer->set_color(P.x, P.y, color);
+				render_buffer->set_depth(P.x, P.y, frag_depth);
+				render_buffer->set_color(P.x, P.y, color);
 			}
 		}
 	}
 }
 
-void graphics_draw_triangle(framebuffer* framebuffer, DrawData* appdata) {
+void graphics_draw_triangle(DrawData* draw_data) {
 	shader_struct_v2f v2fs[3];
-	for (int i = 0; i < appdata->model->nfaces(); i++) {
+	for (int i = 0; i < draw_data->model->nfaces(); i++) {
 		for (int j = 0; j < 3; j++) {
 			shader_struct_a2v a2v;
-			a2v.obj_pos = appdata->model->vert(i, j);
-			a2v.obj_normal = appdata->model->normal(i, j);
-			a2v.uv = appdata->model->uv(i, j);
-			v2fs[j] = appdata->matrial->shader->vertex(&a2v);
+			a2v.obj_pos = draw_data->model->vert(i, j);
+			a2v.obj_normal = draw_data->model->normal(i, j);
+			a2v.uv = draw_data->model->uv(i, j);
+			v2fs[j] = draw_data->shader->vertex(&a2v);
 		}
 
-		rasterize_triangle(framebuffer, appdata, v2fs);
+		rasterize_triangle(draw_data, v2fs);
 	}
 }
