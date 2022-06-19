@@ -272,7 +272,7 @@ Matrix4x4 camera_get_light_view_matrix(Vector3f position, Vector3f target, Vecto
 Matrix4x4 Matrix4_orthographic(float aspect, float size, float near, float far) {
 	float z_range = far - near;
 	Matrix4x4 m = Matrix4x4::identity();
-	assert(right > 0 && top > 0 && z_range > 0);
+	assert(aspect > 0 && size > 0 && z_range > 0);
 	m[0][0] = 1 / aspect * size;
 	m[1][1] = 1 / size;
 	m[2][2] = -2 / z_range;
@@ -346,7 +346,7 @@ int main()
 	NormalMapShader normalmap_shader = NormalMapShader(draw_data);
 	ShadowShader shadowMap = ShadowShader(draw_data);
 
-	Matrial* material = new Matrial(&shadowMap, &mp);
+	Matrial* material = new Matrial(&normalmap_shader, &mp);
 	draw_data->camera = camera;
 	draw_data->matrial = material;
 	draw_data->model = model;
@@ -363,30 +363,14 @@ int main()
 
 		update_camera(window, camera, &record);
 		ViewMatrix = camera_get_view_matrix(camera);
-
-		Projection = Matrix4x4::identity();
-
-		Matrix4x4 m = Matrix4x4::identity();
-		//m[0][0] = -1;
-		//m[1][1] = -1;
-		//m[2][2] = -1;
-		m[3][3] = -1;
-
-		Projection = camera_get_proj_matrix(camera) * m;
-
-		Matrix4x4 m2 = Matrix4x4::identity();
-		m2[0][0] = -1;
-		m2[1][1] = -1;
-		//m2[2][2] = -1;
-		//m2[2][3] = -1;
-		m2[3][3] = -1;
+		Projection = camera_get_proj_matrix(camera);
 
 		draw_data->light_dir = light_dir.normalize();
 		draw_data->model_matrix = ModelMatrix;
 		draw_data->model_matrix_I = ModelMatrix.invert();
 		draw_data->view_matrix = ViewMatrix;
 		draw_data->projection_matrix = Projection;
-		draw_data->light_vp_matrix = (get_light_proj_matrix(aspect, 1, 0, 2) * m2) * camera_get_light_view_matrix(Vector3f(1, 1, 1), Vector3f(0, 0, 0), { 0, 1, 0 });
+		draw_data->light_vp_matrix = get_light_proj_matrix(aspect, 1, 0, 2) * camera_get_light_view_matrix(Vector3f(1, 1, 1), Vector3f(0, 0, 0), { 0, 1, 0 });
 		//draw_data->light_vp_matrix = Projection * camera_get_light_view_matrix(Vector3f(1, 1, 1), Vector3f(0, 0, 0), { 0,1,0 });
 		draw_data->camera_vp_matrix = Projection * ViewMatrix;
 
@@ -413,7 +397,7 @@ int main()
 		record.double_click = 0;
 
 		framebuffer_clear_color(framebuffer, vec4_t());
-		framebuffer_clear_depth(framebuffer, -std::numeric_limits<float>::max());
+		framebuffer_clear_depth(framebuffer, std::numeric_limits<float>::max());
 
 		input_poll_events();
 	}

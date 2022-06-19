@@ -213,7 +213,7 @@ static void rasterize_triangle(framebuffer* framebuffer, DrawData* appdata, shad
 			float frag_depth = interpolate_depth(screen_depth, barycentric_weights);
 
 			// 深度测试
-			if (framebuffer->get_depth(P.x, P.y) > frag_depth) continue;
+			if (frag_depth > framebuffer->get_depth(P.x, P.y)) continue;
 
 			// 变量插值
 			shader_struct_v2f interpolate_v2f;
