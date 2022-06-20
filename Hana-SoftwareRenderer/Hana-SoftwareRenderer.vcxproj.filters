@@ -21,6 +21,9 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
     </Filter>
+    <Filter Include="library">
+      <UniqueIdentifier>{4b947fa5-399e-4a3f-80cc-0db938bab42e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="IShader.cpp">
@@ -47,19 +50,10 @@
     <ClCompile Include="maths_old.cpp">
       <Filter>core</Filter>
     </ClCompile>
-    <ClCompile Include="model.cpp">
-      <Filter>core</Filter>
-    </ClCompile>
     <ClCompile Include="our_gl.cpp">
       <Filter>core</Filter>
     </ClCompile>
-    <ClCompile Include="tgaimage.cpp">
-      <Filter>core</Filter>
-    </ClCompile>
     <ClCompile Include="win32.cpp">
-      <Filter>core</Filter>
-    </ClCompile>
-    <ClCompile Include="color.cpp">
       <Filter>core</Filter>
     </ClCompile>
     <ClCompile Include="renderbuffer.cpp">
@@ -67,6 +61,15 @@
     </ClCompile>
     <ClCompile Include="maths.cpp">
       <Filter>math</Filter>
+    </ClCompile>
+    <ClCompile Include="color.cpp">
+      <Filter>math</Filter>
+    </ClCompile>
+    <ClCompile Include="tgaimage.cpp">
+      <Filter>library</Filter>
+    </ClCompile>
+    <ClCompile Include="model.cpp">
+      <Filter>library</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -85,13 +88,7 @@
     <ClInclude Include="maths_old.h">
       <Filter>core</Filter>
     </ClInclude>
-    <ClInclude Include="model.h">
-      <Filter>core</Filter>
-    </ClInclude>
     <ClInclude Include="our_gl.h">
-      <Filter>core</Filter>
-    </ClInclude>
-    <ClInclude Include="tgaimage.h">
       <Filter>core</Filter>
     </ClInclude>
     <ClInclude Include="camera.h">
@@ -105,9 +102,6 @@
     </ClInclude>
     <ClInclude Include="vector.h">
       <Filter>math</Filter>
-    </ClInclude>
-    <ClInclude Include="color.h">
-      <Filter>core</Filter>
     </ClInclude>
     <ClInclude Include="drawdata.h">
       <Filter>core</Filter>
@@ -123,6 +117,15 @@
     </ClInclude>
     <ClInclude Include="maths.h">
       <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="color.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="tgaimage.h">
+      <Filter>library</Filter>
+    </ClInclude>
+    <ClInclude Include="model.h">
+      <Filter>library</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
