@@ -14,10 +14,6 @@ class Camera
 public:
 	Camera(Vector3f position, Vector3f target, float aspect);
 
-	/* camera creating/releasing */
-	//camera_t* camera_create(Vector3f position, Vector3f target, float aspect);
-	//void camera_release(camera_t* camera);
-
 	/* camera updating */
 	void set_transform(Vector3f position, Vector3f target);
 	void update_transform(Motion motion);
