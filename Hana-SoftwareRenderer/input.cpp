@@ -55,7 +55,7 @@ void button_callback(window_t* window, button_t button, int pressed) {
 	}
 }
 
-void update_camera(window_t* window, camera_t* camera,
+void update_camera(window_t* window, Camera* camera,
 	record_t* record) {
 	Vector2f cursor_pos = get_cursor_pos(window);
 	if (record->is_orbiting) {
@@ -69,13 +69,13 @@ void update_camera(window_t* window, camera_t* camera,
 		record->pan_pos = cursor_pos;
 	}
 	if (input_key_pressed(window, KEY_SPACE)) {
-		camera_set_transform(camera, CAMERA_POSITION, CAMERA_TARGET);
+		camera->set_transform(CAMERA_POSITION, CAMERA_TARGET);
 	}
 	else {
-		motion_t motion;
+		Motion motion;
 		motion.orbit = record->orbit_delta;
 		motion.pan = record->pan_delta;
 		motion.dolly = record->dolly_delta;
-		camera_update_transform(camera, motion);
+		camera->update_transform(motion);
 	}
 }

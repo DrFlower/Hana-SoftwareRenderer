@@ -42,4 +42,4 @@ Vector2f get_cursor_pos(window_t* window);
 
 void scroll_callback(window_t* window, float offset);
 void button_callback(window_t* window, button_t button, int pressed);
-void update_camera(window_t* window, camera_t* camera, record_t* record);
+void update_camera(window_t* window, Camera* camera, record_t* record);

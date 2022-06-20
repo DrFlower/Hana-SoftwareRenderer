@@ -276,7 +276,7 @@ int main()
 	window_t* window;
 	renderbuffer* framebuffer = nullptr;
 	renderbuffer* shdaow_map = nullptr;
-	camera_t* camera;
+	Camera* camera;
 	record_t record;
 	callbacks_t callbacks;
 	float aspect;
@@ -294,7 +294,7 @@ int main()
 	window = window_create(WINDOW_TITLE, WINDOW_WIDTH, WINDOW_HEIGHT);
 	framebuffer = new renderbuffer(WINDOW_WIDTH, WINDOW_HEIGHT);
 	aspect = (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT;
-	camera = camera_create(CAMERA_POSITION, CAMERA_TARGET, aspect);
+	camera = new Camera(CAMERA_POSITION, CAMERA_TARGET, aspect);
 
 	record = record_t();
 
@@ -354,10 +354,10 @@ int main()
 		float delta_time = curr_time - prev_time;
 
 		update_camera(window, camera, &record);
-		ViewMatrix = camera_get_view_matrix(camera);
-		Projection = camera_get_proj_matrix(camera);
+		ViewMatrix = camera->get_view_matrix();
+		Projection = camera->get_proj_matrix();
 
-		shader_data->view_Pos = camera_get_position(camera);
+		shader_data->view_Pos = camera->get_position();
 		shader_data->light_dir = light_dir.normalize();
 		shader_data->model_matrix = ModelMatrix;
 		shader_data->model_matrix_I = ModelMatrix.invert();
@@ -428,7 +428,8 @@ int main()
 	delete shader_data;
 
 	window_destroy(window);
+
 	delete framebuffer;
 	if (shdaow_map) delete shdaow_map;
-	camera_release(camera);
+	delete camera;
 }
