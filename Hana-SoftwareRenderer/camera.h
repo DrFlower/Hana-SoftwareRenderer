@@ -1,7 +1,7 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
-#include "math.h"
+#include "api.h"
 
 struct Motion { Vector2f orbit; Vector2f pan; float dolly; };
 

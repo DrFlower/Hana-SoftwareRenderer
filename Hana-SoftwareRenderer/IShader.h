@@ -1,9 +1,8 @@
 #pragma once
 
-#include "math.h"
 #include "tgaimage.h"
-#include "color.h"
 #include "renderbuffer.h"
+#include "api.h"
 
 struct Matrial {
 	TGAImage* diffuse_map;
@@ -117,7 +116,6 @@ struct IShader {
 			Vector3f ndc_coords;
 			ndc_coords = proj<3>(depth_pos / depth_pos[3]);
 			Vector3f pos = viewport_transform(shader_data->shadow_map->width, shader_data->shadow_map->height, ndc_coords);
-			//Vector3f pos = depth_pos;
 			float depth_bias = 0.05f * (1 - n_dot_l);
 			if (depth_bias < 0.005f) depth_bias = 0.01f;
 			float current_depth = depth_pos[2] - depth_bias;
@@ -126,8 +124,6 @@ struct IShader {
 				return 0;
 
 			float closest_depth = shader_data->shadow_map->get_color(pos.x, pos.y).r;
-
-			//std::cout << "current_depth:" << current_depth << "   closest_depth" << closest_depth << std::endl;
 			return current_depth < closest_depth;
 		}
 

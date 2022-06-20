@@ -1,5 +1,4 @@
 #include <assert.h>
-#include <math.h>
 #include <stdlib.h>
 #include "camera.h"
 #include "macro.h"

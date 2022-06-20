@@ -2,8 +2,8 @@
 #define __MODEL_H__
 #include <vector>
 #include <string>
-#include "math.h"
 #include "tgaimage.h"
+#include "api.h"
 
 class Model {
 private:

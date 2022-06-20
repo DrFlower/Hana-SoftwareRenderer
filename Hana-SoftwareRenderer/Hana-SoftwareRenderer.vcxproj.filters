@@ -29,7 +29,7 @@
     <ClCompile Include="input.cpp">
       <Filter>Input</Filter>
     </ClCompile>
-    <ClCompile Include="math.cpp">
+    <ClCompile Include="vector.cpp">
       <Filter>math</Filter>
     </ClCompile>
     <ClCompile Include="camera.cpp">
@@ -100,7 +100,7 @@
     <ClInclude Include="input.h">
       <Filter>Input</Filter>
     </ClInclude>
-    <ClInclude Include="math.h">
+    <ClInclude Include="vector.h">
       <Filter>math</Filter>
     </ClInclude>
     <ClInclude Include="color.h">
@@ -110,6 +110,12 @@
       <Filter>core</Filter>
     </ClInclude>
     <ClInclude Include="renderbuffer.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="matrix.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="api.h">
       <Filter>core</Filter>
     </ClInclude>
   </ItemGroup>

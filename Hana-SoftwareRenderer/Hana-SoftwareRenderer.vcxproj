@@ -136,7 +136,7 @@
     <ClCompile Include="input.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="maths.cpp" />
-    <ClCompile Include="math.cpp" />
+    <ClCompile Include="vector.cpp" />
     <ClCompile Include="model.cpp" />
     <ClCompile Include="our_gl.cpp" />
     <ClCompile Include="IShader.cpp" />
@@ -145,6 +145,7 @@
     <ClCompile Include="win32.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="api.h" />
     <ClInclude Include="camera.h" />
     <ClInclude Include="color.h" />
     <ClInclude Include="drawdata.h" />
@@ -154,10 +155,11 @@
     <ClInclude Include="IShader.h" />
     <ClInclude Include="macro.h" />
     <ClInclude Include="maths.h" />
+    <ClInclude Include="matrix.h" />
     <ClInclude Include="model.h" />
     <ClInclude Include="our_gl.h" />
     <ClInclude Include="platform.h" />
-    <ClInclude Include="math.h" />
+    <ClInclude Include="vector.h" />
     <ClInclude Include="renderbuffer.h" />
     <ClInclude Include="tgaimage.h" />
   </ItemGroup>
