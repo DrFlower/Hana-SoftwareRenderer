@@ -135,6 +135,7 @@
     <ClCompile Include="image.cpp" />
     <ClCompile Include="input.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="maths_old.cpp" />
     <ClCompile Include="maths.cpp" />
     <ClCompile Include="vector.cpp" />
     <ClCompile Include="model.cpp" />
@@ -154,6 +155,7 @@
     <ClInclude Include="input.h" />
     <ClInclude Include="IShader.h" />
     <ClInclude Include="macro.h" />
+    <ClInclude Include="maths_old.h" />
     <ClInclude Include="maths.h" />
     <ClInclude Include="matrix.h" />
     <ClInclude Include="model.h" />

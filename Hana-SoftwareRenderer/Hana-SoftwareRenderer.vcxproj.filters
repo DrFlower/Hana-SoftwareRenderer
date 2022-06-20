@@ -44,7 +44,7 @@
     <ClCompile Include="main.cpp">
       <Filter>core</Filter>
     </ClCompile>
-    <ClCompile Include="maths.cpp">
+    <ClCompile Include="maths_old.cpp">
       <Filter>core</Filter>
     </ClCompile>
     <ClCompile Include="model.cpp">
@@ -65,6 +65,9 @@
     <ClCompile Include="renderbuffer.cpp">
       <Filter>core</Filter>
     </ClCompile>
+    <ClCompile Include="maths.cpp">
+      <Filter>math</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="platform.h">
@@ -79,7 +82,7 @@
     <ClInclude Include="graphics.h">
       <Filter>core</Filter>
     </ClInclude>
-    <ClInclude Include="maths.h">
+    <ClInclude Include="maths_old.h">
       <Filter>core</Filter>
     </ClInclude>
     <ClInclude Include="model.h">
@@ -117,6 +120,9 @@
     </ClInclude>
     <ClInclude Include="api.h">
       <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="maths.h">
+      <Filter>math</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

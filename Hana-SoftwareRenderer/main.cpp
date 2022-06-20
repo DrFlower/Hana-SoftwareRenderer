@@ -223,51 +223,14 @@ void RenderModel(std::string modelName, renderbuffer* framebuffer, IShader_old& 
 	}
 }
 
-Matrix4x4 matrix4_lookat(Vector3f eye, Vector3f target, Vector3f up) {
-	Vector3f z_axis = (eye - target).normalize();
-	Vector3f x_axis = cross(up, z_axis).normalize();
-	Vector3f y_axis = cross(z_axis, x_axis);
-	Matrix4x4 m = Matrix4x4::identity();
-
-	m[0][0] = x_axis.x;
-	m[0][1] = x_axis.y;
-	m[0][2] = x_axis.z;
-
-	m[1][0] = y_axis.x;
-	m[1][1] = y_axis.y;
-	m[1][2] = y_axis.z;
-
-	m[2][0] = z_axis.x;
-	m[2][1] = z_axis.y;
-	m[2][2] = z_axis.z;
-
-	m[0][3] = -(x_axis * eye);
-	m[1][3] = -(y_axis * eye);
-	m[2][3] = -(z_axis * eye);
-
-	return m;
-}
-
 Matrix4x4 camera_get_light_view_matrix(Vector3f position, Vector3f target, Vector3f UP) {
-	vec3_t up = vec3_new(UP.x, UP.y, UP.z);
-	Matrix4x4 m = matrix4_lookat(position, target, UP);
-	return m;
-}
-
-Matrix4x4 Matrix4_orthographic(float aspect, float size, float near, float far) {
-	float z_range = far - near;
-	Matrix4x4 m = Matrix4x4::identity();
-	assert(aspect > 0 && size > 0 && z_range > 0);
-	m[0][0] = 1 / aspect * size;
-	m[1][1] = 1 / size;
-	m[2][2] = -2 / z_range;
-	m[2][3] = -(near + far) / z_range;
+	Matrix4x4 m = lookat(position, target, UP);
 	return m;
 }
 
 static Matrix4x4 get_light_proj_matrix(float aspect, float size,
 	float z_near, float z_far) {
-	return Matrix4_orthographic(aspect, size, z_near, z_far);
+	return orthographic(aspect, size, z_near, z_far);
 }
 
 int main()

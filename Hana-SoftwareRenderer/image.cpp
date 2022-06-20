@@ -5,7 +5,6 @@
 #include <string.h>
 #include "image.h"
 #include "macro.h"
-#include "maths.h"
 
 //Hana Begin
 //#include "private.h"

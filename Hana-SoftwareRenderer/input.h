@@ -1,7 +1,6 @@
 #pragma once
 
-#include "math.h"
-#include "maths.h"
+#include "api.h"
 #include "platform.h"
 #include "camera.h"
 

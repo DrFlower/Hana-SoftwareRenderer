@@ -131,10 +131,6 @@ struct IShader {
 	}
 };
 
-static float saturate(float value) {
-	return value > 1 ? 1 : value < 0 ? 0 : value;
-}
-
 struct GroundShader : public IShader {
 	virtual shader_struct_v2f vertex(shader_struct_a2v* a2v) override;
 	virtual bool fragment(shader_struct_v2f* v2f, Color& color) override;

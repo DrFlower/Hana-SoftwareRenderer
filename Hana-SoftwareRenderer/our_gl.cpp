@@ -31,20 +31,20 @@ void projection(float coeff) {
 	Projection[3][2] = coeff;
 }
 
-void lookat(Vector3f eye, Vector3f center, Vector3f up) {
-	Vector3f z = (eye - center).normalize();
-	Vector3f x = cross(up, z).normalize();
-	Vector3f y = cross(z, x).normalize();
-	Matrix4x4 Minv = Matrix4x4::identity();
-	Matrix4x4 Tr = Matrix4x4::identity();
-	for (int i = 0; i < 3; i++) {
-		Minv[0][i] = x[i];
-		Minv[1][i] = y[i];
-		Minv[2][i] = z[i];
-		Tr[i][3] = -center[i];
-	}
-	ViewMatrix = Minv * Tr;
-}
+//void lookat(Vector3f eye, Vector3f center, Vector3f up) {
+//	Vector3f z = (eye - center).normalize();
+//	Vector3f x = cross(up, z).normalize();
+//	Vector3f y = cross(z, x).normalize();
+//	Matrix4x4 Minv = Matrix4x4::identity();
+//	Matrix4x4 Tr = Matrix4x4::identity();
+//	for (int i = 0; i < 3; i++) {
+//		Minv[0][i] = x[i];
+//		Minv[1][i] = y[i];
+//		Minv[2][i] = z[i];
+//		Tr[i][3] = -center[i];
+//	}
+//	ViewMatrix = Minv * Tr;
+//}
 
 bool is_back_facing(Vector3f* ndc_coords) {
 	Vector3f a = ndc_coords[0];

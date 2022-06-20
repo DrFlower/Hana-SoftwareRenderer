@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include "camera.h"
 #include "macro.h"
-#include "maths.h"
 #include "iostream"
 
 /*
@@ -53,7 +52,7 @@ static Vector3f calculate_offset(Vector3f from_target, Motion motion) {
 	radius *= (float)pow(0.95, motion.dolly);
 	theta -= motion.orbit.x * factor;
 	phi -= motion.orbit.y * factor;
-	phi = float_clamp(phi, EPSILON, PI - EPSILON);
+	phi = clamp(phi, EPSILON, PI - EPSILON);
 
 	offset.x = radius * (float)sin(phi) * (float)sin(theta);
 	offset.y = radius * (float)cos(phi);
@@ -82,30 +81,13 @@ Vector3f Camera::get_forward() {
 }
 
 Matrix4x4 Camera::get_view_matrix() {
-	vec3_t position = vec3_new(this->position.x, this->position.y, this->position.z);
-	vec3_t target = vec3_new(this->target.x, this->target.y, this->target.z);
-	vec3_t up = vec3_new(UP.x, UP.y, UP.z);
-	mat4_t m = mat4_lookat(position, target, up);
+	Vector3f up = Vector3f(UP.x, UP.y, UP.z);
+	Matrix4x4 m = lookat(position, target, up);
 	Matrix4x4 ret = Matrix4x4::identity();
-	for (size_t i = 0; i < 4; i++)
-	{
-		for (size_t j = 0; j < 4; j++)
-		{
-			ret[i][j] = m.m[i][j];
-		}
-	}
-	return ret;
+	return m;
 }
 
 Matrix4x4 Camera::get_proj_matrix() {
-	mat4_t m = mat4_perspective(FOVY, aspect, NEAR, FAR);
-	Matrix4x4 ret = Matrix4x4::identity();
-	for (size_t i = 0; i < 4; i++)
-	{
-		for (size_t j = 0; j < 4; j++)
-		{
-			ret[i][j] = m.m[i][j];
-		}
-	}
-	return ret;
+	Matrix4x4 m = perspective(FOVY, aspect, NEAR, FAR);
+	return m;
 }

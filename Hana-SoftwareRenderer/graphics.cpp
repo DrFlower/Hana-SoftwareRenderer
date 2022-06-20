@@ -4,7 +4,6 @@
 #include <string.h>
 #include "graphics.h"
 #include "macro.h"
-#include "maths.h"
 #include "our_gl.h"
 
 /*
@@ -59,24 +58,6 @@ static float interpolate_depth(float* screen_depths, Vector3f weights) {
  * equation 15 in reference 1 (page 2) is a simplified 2d version of
  * equation 3.5 in reference 2 (page 58) which uses barycentric coordinates
  */
-static void interpolate_varyings(
-	void* src_varyings[3], void* dst_varyings,
-	int sizeof_varyings, vec3_t weights, float recip_w[3]) {
-	int num_floats = sizeof_varyings / sizeof(float);
-	float* src0 = (float*)src_varyings[0];
-	float* src1 = (float*)src_varyings[1];
-	float* src2 = (float*)src_varyings[2];
-	float* dst = (float*)dst_varyings;
-	float weight0 = recip_w[0] * weights.x;
-	float weight1 = recip_w[1] * weights.y;
-	float weight2 = recip_w[2] * weights.z;
-	float normalizer = 1 / (weight0 + weight1 + weight2);
-	int i;
-	for (i = 0; i < num_floats; i++) {
-		float sum = src0[i] * weight0 + src1[i] * weight1 + src2[i] * weight2;
-		dst[i] = sum * normalizer;
-	}
-}
 
 static void interpolate_varyings(shader_struct_v2f* v2f, shader_struct_v2f* ret, int sizeof_varyings, Vector3f weights, float recip_w[3]) {
 	int num_floats = sizeof_varyings / sizeof(float);

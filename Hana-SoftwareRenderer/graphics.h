@@ -1,7 +1,7 @@
 #ifndef GRAPHICS_H
 #define GRAPHICS_H
 
-#include "maths.h"
+#include "api.h"
 #include "renderbuffer.h"
 #include "drawdata.h"
 

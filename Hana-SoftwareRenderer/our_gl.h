@@ -15,9 +15,9 @@ extern Vector3f light_dir;
 extern Color AMBIENT;
 extern Color LightColor;
 
-void viewport(int x, int y, int w, int h);
-void projection(float coeff = 0.f); // coeff = -1/c
-void lookat(Vector3f eye, Vector3f center, Vector3f up);
+//void viewport(int x, int y, int w, int h);
+//void projection(float coeff = 0.f); // coeff = -1/c
+//void lookat(Vector3f eye, Vector3f center, Vector3f up);
 
 struct IShader_old {
 	Matrix<4, 3, float> varying_tri; // triangle coordinates (clip coordinates), written by VS, read by FS
