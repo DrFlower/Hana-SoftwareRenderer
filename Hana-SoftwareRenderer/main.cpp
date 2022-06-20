@@ -273,7 +273,7 @@ int main()
 	SpecularShader_old specularShader;
 
 
-	model = new Model("D:\\Development\\Github\\Hana-SoftwareRenderer\\Hana-SoftwareRenderer\\obj\\african_head.obj");
+	model = new Model("D:\\Development\\Github\\Hana-SoftwareRenderer\\Hana-SoftwareRenderer\\assets\\african_head.obj");
 
 	Matrial material;
 	material.diffuse_map = model->get_diffuse_map();
