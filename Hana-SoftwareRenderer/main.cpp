@@ -292,7 +292,7 @@ int main()
 	light_dir.normalize();
 
 	window = window_create(WINDOW_TITLE, WINDOW_WIDTH, WINDOW_HEIGHT);
-	framebuffer = renderbuffer_create(WINDOW_WIDTH, WINDOW_HEIGHT);
+	framebuffer = new renderbuffer(WINDOW_WIDTH, WINDOW_HEIGHT);
 	aspect = (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT;
 	camera = camera_create(CAMERA_POSITION, CAMERA_TARGET, aspect);
 
@@ -310,7 +310,7 @@ int main()
 	SpecularShader_old specularShader;
 
 
-	model = new Model("D:\\Development\\Github\\Hana-SoftwareRenderer\\Hana-SoftwareRenderer\\obj\\diablo3_pose.obj");
+	model = new Model("D:\\Development\\Github\\Hana-SoftwareRenderer\\Hana-SoftwareRenderer\\obj\\african_head.obj");
 
 	Matrial material;
 	material.diffuse_map = model->get_diffuse_map();
@@ -370,7 +370,7 @@ int main()
 		{
 			if (!shadow_draw_data)
 			{
-				shdaow_map = renderbuffer_create(WINDOW_WIDTH, WINDOW_HEIGHT);
+				shdaow_map = new renderbuffer(WINDOW_WIDTH, WINDOW_HEIGHT);
 				shadow_draw_data = new DrawData();
 				shadow_draw_data->model = model;
 				shadow_draw_data->shader = &shadow_shader;
@@ -403,13 +403,13 @@ int main()
 		record.single_click = 0;
 		record.double_click = 0;
 
-		renderbuffer_clear_color(framebuffer, Color::Black);
-		renderbuffer_clear_depth(framebuffer, std::numeric_limits<float>::max());
+		framebuffer->renderbuffer_clear_color(Color::Black);
+		framebuffer->renderbuffer_clear_depth(std::numeric_limits<float>::max());
 
 		if (enable_shadow)
 		{
-			renderbuffer_clear_color(shdaow_map, Color::Black);
-			renderbuffer_clear_depth(shdaow_map, std::numeric_limits<float>::max());
+			shdaow_map->renderbuffer_clear_color(Color::Black);
+			shdaow_map->renderbuffer_clear_depth(std::numeric_limits<float>::max());
 		}
 
 		input_poll_events();
@@ -428,7 +428,7 @@ int main()
 	delete shader_data;
 
 	window_destroy(window);
-	renderbuffer_release(framebuffer);
-	if (shdaow_map) renderbuffer_release(shdaow_map);
+	delete framebuffer;
+	if (shdaow_map) delete shdaow_map;
 	camera_release(camera);
 }
