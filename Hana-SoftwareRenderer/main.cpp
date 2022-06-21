@@ -58,8 +58,7 @@ int main()
 	callbacks.button_callback = button_callback;
 	callbacks.scroll_callback = scroll_callback;
 
-
-	model = new Model("D:\\Development\\Github\\Hana-SoftwareRenderer\\Hana-SoftwareRenderer\\assets\\african_head.obj");
+	model = new Model("african_head.obj");
 
 	Matrial material;
 	material.diffuse_map = model->get_diffuse_map();
