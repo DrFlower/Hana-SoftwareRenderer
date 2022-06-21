@@ -50,9 +50,6 @@
     <ClCompile Include="maths_old.cpp">
       <Filter>core</Filter>
     </ClCompile>
-    <ClCompile Include="our_gl.cpp">
-      <Filter>core</Filter>
-    </ClCompile>
     <ClCompile Include="win32.cpp">
       <Filter>core</Filter>
     </ClCompile>
@@ -86,9 +83,6 @@
       <Filter>core</Filter>
     </ClInclude>
     <ClInclude Include="maths_old.h">
-      <Filter>core</Filter>
-    </ClInclude>
-    <ClInclude Include="our_gl.h">
       <Filter>core</Filter>
     </ClInclude>
     <ClInclude Include="camera.h">

@@ -139,7 +139,6 @@
     <ClCompile Include="maths.cpp" />
     <ClCompile Include="vector.cpp" />
     <ClCompile Include="model.cpp" />
-    <ClCompile Include="our_gl.cpp" />
     <ClCompile Include="IShader.cpp" />
     <ClCompile Include="renderbuffer.cpp" />
     <ClCompile Include="tgaimage.cpp" />
@@ -159,7 +158,6 @@
     <ClInclude Include="maths.h" />
     <ClInclude Include="matrix.h" />
     <ClInclude Include="model.h" />
-    <ClInclude Include="our_gl.h" />
     <ClInclude Include="platform.h" />
     <ClInclude Include="vector.h" />
     <ClInclude Include="renderbuffer.h" />

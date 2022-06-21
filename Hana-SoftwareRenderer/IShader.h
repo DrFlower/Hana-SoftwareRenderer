@@ -14,13 +14,14 @@ struct Matrial {
 	float bump_scale;
 };
 
-
 struct ShaderData {
 	Matrial* matrial;
 	renderbuffer* targetBuffer;
 	renderbuffer* shadow_map;
 	Vector3f view_Pos;
 	Vector3f light_dir;
+	Color light_color;
+	Color ambient;
 	Matrix4x4 model_matrix;
 	Matrix4x4 model_matrix_I;
 	Matrix4x4 view_matrix;

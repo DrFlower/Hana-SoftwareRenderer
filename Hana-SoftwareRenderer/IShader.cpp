@@ -1,5 +1,4 @@
 #include "IShader.h"
-#include "our_gl.h"
 
 //¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý GroundShader ¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý¡ý
 
@@ -95,12 +94,12 @@ shader_struct_v2f BlinnShader::vertex(shader_struct_a2v* a2v) {
 bool BlinnShader::fragment(shader_struct_v2f* v2f, Color& color) {
 	Vector3f worldNormalDir = (v2f->world_normal).normalize();
 	Color albedo = tex_diffuse(v2f->uv) * shader_data->matrial->color;
-	Color ambient = AMBIENT * albedo;
+	Color ambient = shader_data->ambient * albedo;
 	float n_dot_l = saturate(worldNormalDir * WorldLightDir());
-	Color diffuse = LightColor * albedo * n_dot_l;
+	Color diffuse = shader_data->light_color * albedo * n_dot_l;
 	Vector3f viewDir = WorldSpaceViewDir(v2f->world_pos).normalize();
 	Vector3f halfDir = (viewDir + WorldLightDir()).normalize();
-	Color spcular = LightColor * shader_data->matrial->specular * std::pow(saturate(worldNormalDir * halfDir), shader_data->matrial->gloss);
+	Color spcular = shader_data->light_color * shader_data->matrial->specular * std::pow(saturate(worldNormalDir * halfDir), shader_data->matrial->gloss);
 
 	Vector4f depth_pos = shader_data->light_vp_matrix * embed<4>(v2f->world_pos);
 	int shadow = is_in_shadow(depth_pos, n_dot_l);
@@ -148,12 +147,12 @@ bool NormalMapShader::fragment(shader_struct_v2f* v2f, Color& color) {
 
 	Vector3f worldNormalDir = normal;
 	Color albedo = tex_diffuse(v2f->uv) * shader_data->matrial->color;
-	Color ambient = AMBIENT * albedo;
+	Color ambient = shader_data->ambient * albedo;
 	float n_dot_l = saturate(worldNormalDir * WorldLightDir());
-	Color diffuse = LightColor * albedo * n_dot_l;
+	Color diffuse = shader_data->light_color * albedo * n_dot_l;
 	Vector3f viewDir = WorldSpaceViewDir(v2f->world_pos).normalize();
 	Vector3f halfDir = (viewDir + WorldLightDir()).normalize();
-	Color spcular = LightColor * shader_data->matrial->specular * std::pow(saturate(worldNormalDir * halfDir), shader_data->matrial->gloss);
+	Color spcular = shader_data->light_color * shader_data->matrial->specular * std::pow(saturate(worldNormalDir * halfDir), shader_data->matrial->gloss);
 
 	Vector4f depth_pos = shader_data->light_vp_matrix * embed<4>(v2f->world_pos);
 	int shadow = is_in_shadow(depth_pos, n_dot_l);
