@@ -8,5 +8,5 @@ struct DrawData
 {
 	Model* model;
 	IShader* shader;
-	renderbuffer* renderbuffer;
+	RenderBuffer* renderbuffer;
 };

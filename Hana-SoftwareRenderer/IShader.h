@@ -16,8 +16,8 @@ struct Matrial {
 
 struct ShaderData {
 	Matrial* matrial;
-	renderbuffer* targetBuffer;
-	renderbuffer* shadow_map;
+	RenderBuffer* targetBuffer;
+	RenderBuffer* shadow_map;
 	Vector3f view_Pos;
 	Vector3f light_dir;
 	Color light_color;

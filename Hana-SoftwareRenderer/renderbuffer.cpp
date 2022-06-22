@@ -1,6 +1,6 @@
 #include "renderbuffer.h"
 
-renderbuffer::renderbuffer(int width, int height) {
+RenderBuffer::RenderBuffer(int width, int height) {
 	int color_buffer_size = width * height * 4;
 	int depth_buffer_size = sizeof(float) * width * height;
 	Color default_color = { 0, 0, 0, 1 };
@@ -17,25 +17,25 @@ renderbuffer::renderbuffer(int width, int height) {
 	this->renderbuffer_clear_depth(default_depth);
 }
 
-renderbuffer::~renderbuffer()
+RenderBuffer::~RenderBuffer()
 {
 	free(color_buffer);
 	free(depth_buffer);
 }
 
 
-void renderbuffer::set_depth(int x, int y, float depth) {
+void RenderBuffer::set_depth(int x, int y, float depth) {
 	int index = y * width + x;
 	depth_buffer[index] = depth;
 }
 
-float renderbuffer::get_depth(int x, int y)
+float RenderBuffer::get_depth(int x, int y)
 {
 	int index = y * width + x;
 	return depth_buffer[index];
 }
 
-void renderbuffer::set_color(int x, int y, Color color)
+void RenderBuffer::set_color(int x, int y, Color color)
 {
 	int index = (y * width + x) * 4;
 	color_buffer[index + 0] = color.r * 255;
@@ -43,20 +43,20 @@ void renderbuffer::set_color(int x, int y, Color color)
 	color_buffer[index + 2] = color.b * 255;
 }
 
-Color renderbuffer::get_color(int x, int y)
+Color RenderBuffer::get_color(int x, int y)
 {
 	int index = (y * width + x) * 4;
 	return Color(color_buffer[index + 0] / 255.f, color_buffer[index + 1] / 255.f, color_buffer[index + 2] / 255.f);
 }
 
 
-void renderbuffer::renderbuffer_release() {
+void RenderBuffer::renderbuffer_release() {
 	free(color_buffer);
 	free(depth_buffer);
 	free(this);
 }
 
-void renderbuffer::renderbuffer_clear_color(Color color) {
+void RenderBuffer::renderbuffer_clear_color(Color color) {
 	int num_pixels = this->width * this->height;
 	int i;
 	for (i = 0; i < num_pixels; i++) {
@@ -67,7 +67,7 @@ void renderbuffer::renderbuffer_clear_color(Color color) {
 	}
 }
 
-void renderbuffer::renderbuffer_clear_depth(float depth) {
+void RenderBuffer::renderbuffer_clear_depth(float depth) {
 	int num_pixels = this->width * this->height;
 	int i;
 	for (i = 0; i < num_pixels; i++) {

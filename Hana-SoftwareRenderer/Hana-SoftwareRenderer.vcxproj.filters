@@ -8,9 +8,6 @@
     <Filter Include="shaders">
       <UniqueIdentifier>{fad1a95b-a8a6-4acb-beae-2a472a9dca7c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="material">
-      <UniqueIdentifier>{a85081ab-0abd-40c7-a26e-4bb08da16a65}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Input">
       <UniqueIdentifier>{c60f6147-683a-453d-b699-51b7aa44d3a6}</UniqueIdentifier>
     </Filter>
@@ -21,8 +18,11 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
     </Filter>
-    <Filter Include="library">
+    <Filter Include="model">
       <UniqueIdentifier>{4b947fa5-399e-4a3f-80cc-0db938bab42e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="scene">
+      <UniqueIdentifier>{8ad0d5fc-c2e9-4dc4-9b41-d887abbe883a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -63,10 +63,16 @@
       <Filter>math</Filter>
     </ClCompile>
     <ClCompile Include="tgaimage.cpp">
-      <Filter>library</Filter>
+      <Filter>model</Filter>
     </ClCompile>
     <ClCompile Include="model.cpp">
-      <Filter>library</Filter>
+      <Filter>model</Filter>
+    </ClCompile>
+    <ClCompile Include="scene.cpp">
+      <Filter>scene</Filter>
+    </ClCompile>
+    <ClCompile Include="gameobject.cpp">
+      <Filter>scene</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -116,10 +122,16 @@
       <Filter>math</Filter>
     </ClInclude>
     <ClInclude Include="tgaimage.h">
-      <Filter>library</Filter>
+      <Filter>model</Filter>
     </ClInclude>
     <ClInclude Include="model.h">
-      <Filter>library</Filter>
+      <Filter>model</Filter>
+    </ClInclude>
+    <ClInclude Include="scene.h">
+      <Filter>scene</Filter>
+    </ClInclude>
+    <ClInclude Include="gameobject.h">
+      <Filter>scene</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

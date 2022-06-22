@@ -140,7 +140,7 @@ static Vector3f barycentric(Vector2f A, Vector2f B, Vector2f C, Vector2f P) {
 
 static void rasterize_triangle(DrawData* draw_data, shader_struct_v2f* v2f) {
 
-	renderbuffer* render_buffer = draw_data->renderbuffer;
+	RenderBuffer* render_buffer = draw_data->renderbuffer;
 
 	// 齐次除法 / 透视除法 (homogeneous division / perspective division)
 	Vector3f ndc_coords[3];

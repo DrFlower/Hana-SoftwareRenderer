@@ -15,6 +15,8 @@ public:
 template<typename T> class Vector<2, T> {
 public:
 	T x, y;
+	static Vector Zero;
+	static Vector One;
 	Vector() :x(T()), y(T()) {};
 	Vector(T _x, T _y) :x(_x), y(_y) {};
 	template <class U> Vector<2, T>(const Vector<2, U>& v);
@@ -23,9 +25,14 @@ public:
 	float normal() { return std::sqrt(x * x + y * y); }
 };
 
+template<> Vector<2, float> Vector<2, float>::Zero = Vector<2, float>(0, 0);
+template<> Vector<2, float> Vector<2, float>::One = Vector<2, float>(1, 1);
+
 template<typename T> class Vector<3, T> {
 public:
 	T x, y, z;
+	static Vector Zero;
+	static Vector One;
 	Vector() :x(T()), y(T()), z(T()) {};
 	Vector(T _x, T _y, T _z) :x(_x), y(_y), z(_z) {};
 	template <class U> Vector<3, T>(const Vector<3, U>& v);
@@ -34,6 +41,10 @@ public:
 	float normal() { return std::sqrt(x * x + y * y + z * z); }
 	Vector<3, T>& normalize(T l = 1) { *this = (*this) * (l / normal()); return *this; }
 };
+
+template<> Vector<3, float> Vector<3, float>::Zero = Vector<3, float>(0, 0, 0);
+template<> Vector<3, float> Vector<3, float>::One = Vector<3, float>(1, 1, 1);
+
 
 template<size_t SIZE, typename T> Vector<SIZE, T> operator+(Vector<SIZE, T> lhs, const Vector<SIZE, T>& rhs) {
 	for (size_t i = SIZE; i--; lhs[i] += rhs[i]);

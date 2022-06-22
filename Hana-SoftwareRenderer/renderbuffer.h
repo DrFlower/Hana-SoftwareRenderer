@@ -2,10 +2,10 @@
 
 #include "color.h"
 
-class renderbuffer {
+class RenderBuffer {
 public:
-	renderbuffer(int width, int height);
-	~renderbuffer();
+	RenderBuffer(int width, int height);
+	~RenderBuffer();
 
 	int width, height;
 	unsigned char* color_buffer;

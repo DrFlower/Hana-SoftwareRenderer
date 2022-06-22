@@ -12,12 +12,12 @@ Vector2f get_cursor_pos(window_t* window) {
 }
 
 void scroll_callback(window_t* window, float offset) {
-	record_t* record = (record_t*)window_get_userdata(window);
+	Record* record = (Record*)window_get_userdata(window);
 	record->dolly_delta += offset;
 }
 
 void button_callback(window_t* window, button_t button, int pressed) {
-	record_t* record = (record_t*)window_get_userdata(window);
+	Record* record = (Record*)window_get_userdata(window);
 	Vector2f cursor_pos = get_cursor_pos(window);
 	if (button == BUTTON_L) {
 		float curr_time = platform_get_time();
@@ -56,7 +56,7 @@ void button_callback(window_t* window, button_t button, int pressed) {
 }
 
 void update_camera(window_t* window, Camera* camera,
-	record_t* record) {
+	Record* record) {
 	Vector2f cursor_pos = get_cursor_pos(window);
 	if (record->is_orbiting) {
 		Vector2f pos_delta = get_pos_delta(record->orbit_pos, cursor_pos);
