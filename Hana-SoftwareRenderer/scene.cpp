@@ -55,7 +55,7 @@ SingleModelScene::SingleModelScene(const char* modelName, window_t* window, Rend
 	//TextureShader texture_shader = TextureShader();
 	//TextureWithLightShader text_with_light_shader = TextureWithLightShader();
 	//BlinnShader blinn_shader = BlinnShader();
-	shader = new TextureShader();
+	shader = new BlinnShader();
 	shadow_shader = new ShadowShader();
 
 	enable_shadow = false;
@@ -66,11 +66,19 @@ SingleModelScene::SingleModelScene(const char* modelName, window_t* window, Rend
 	draw_data->model = gameobject->model;
 	draw_data->shader = shader;
 	draw_data->shader->shader_data = shader_data;
-	draw_data->renderbuffer = renderBuffer;
+	draw_data->renderbuffer = this->frameBuffer;
 }
 
 SingleModelScene::~SingleModelScene() {
 	delete gameobject;
+	delete material;
+	delete shader_data;
+	delete shader;
+	delete shadow_shader;
+	delete draw_data;
+
+	if (shadow_draw_data)  delete shadow_draw_data;
+	if (shdaow_map)  delete shdaow_map;
 }
 
 void SingleModelScene::tick(float delta_time) {
@@ -78,7 +86,7 @@ void SingleModelScene::tick(float delta_time) {
 
 	Matrix4x4 view_matrix = this->camera->get_view_matrix();
 	Matrix4x4 projection_matrix = this->camera->get_proj_matrix();
-	Matrix4x4 model_matrix =gameobject->GetModelMatrix();
+	Matrix4x4 model_matrix = gameobject->GetModelMatrix();
 	Matrix4x4 model_matrix_I = model_matrix.invert();
 
 	shader_data->view_Pos = this->camera->get_position();
@@ -111,11 +119,6 @@ void SingleModelScene::tick(float delta_time) {
 
 	graphics_draw_triangle(draw_data);
 
-	window_draw_buffer(window, frameBuffer);
-
-
-	frameBuffer->renderbuffer_clear_color(Color::Black);
-	frameBuffer->renderbuffer_clear_depth(std::numeric_limits<float>::max());
 
 	if (enable_shadow)
 	{
