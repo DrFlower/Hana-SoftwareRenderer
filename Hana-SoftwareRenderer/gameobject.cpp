@@ -19,6 +19,8 @@ Matrix4x4 GameObject::GetModelMatrix() {
 
 GameObject_RotateAround::GameObject_RotateAround(Vector3f position, Vector3f rotation, Vector3f scale) :GameObject(position, rotation, scale) {}
 
+GameObject_StaticModel::GameObject_StaticModel(Vector3f position, Vector3f rotation, Vector3f scale) :GameObject(position, rotation, scale) {}
+
 GameObject_StaticModel::GameObject_StaticModel(const char* filename, Vector3f position, Vector3f rotation, Vector3f scale) :GameObject(position, rotation, scale) {
 	this->model = new Model(filename);
 }
