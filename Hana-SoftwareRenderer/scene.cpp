@@ -22,7 +22,7 @@ Scene::~Scene() {
 }
 
 SingleModelScene::SingleModelScene(const char* modelName, RenderBuffer* renderBuffer) :Scene(renderBuffer) {
-	gameobject = new GameObject_StaticModel(modelName);
+	gameobject = new GameObject_StaticModel(modelName, Vector3f(0, 0, 0), Vector3f(0, 0, 90), Vector3f::One);
 
 	material = new Matrial();
 	material->diffuse_map = gameobject->model->get_diffuse_map();
@@ -61,8 +61,8 @@ void SingleModelScene::tick(float delta_time) {
 
 MultiModelScene::MultiModelScene(RenderBuffer* renderBuffer) :Scene(renderBuffer) {
 
-	GameObject_StaticModel* go_1 = new GameObject_StaticModel("african_head.obj", Vector3f::Zero, Vector3f::Zero, Vector3f::One);
-	GameObject_StaticModel* go_2 = new GameObject_StaticModel("floor.obj", Vector3f(0, 0, -2), Vector3f(0, 0, 0), Vector3f(0.2f, 0.2f, 0.2f));
+	GameObject_StaticModel* go_1 = new GameObject_StaticModel("african_head.obj", Vector3f(0, 0, -2), Vector3f::Zero, Vector3f::One);
+	GameObject_StaticModel* go_2 = new GameObject_StaticModel("floor.obj", Vector3f(0, -4, -2), Vector3f(-90, 0, 0), Vector3f(0.2f, 0.2f, 0.2f));
 
 	gameobject = new GameObject_StaticModel[2]{ *go_1 ,*go_2 };
 
@@ -97,7 +97,7 @@ MultiModelScene::MultiModelScene(RenderBuffer* renderBuffer) :Scene(renderBuffer
 	shader = new BlinnShader[2]{ *shader_1 ,*shader_2 };
 
 
-	enable_shadow = true;
+	enable_shadow = false;
 
 	draw_model = new DrawModel[2]{ {go_1, m_1, shader_1},{go_2, m_2, shader_2} };
 }

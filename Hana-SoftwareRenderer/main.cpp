@@ -47,8 +47,8 @@ int main()
 	prev_time = platform_get_time();
 	print_time = prev_time;
 
-	SingleModelScene scene = SingleModelScene("african_head.obj", framebuffer);
-	//MultiModelScene scene = MultiModelScene(framebuffer);
+	//SingleModelScene scene = SingleModelScene("african_head.obj", framebuffer);
+	MultiModelScene scene = MultiModelScene(framebuffer);
 
 	window_set_userdata(window, &record);
 	input_set_callbacks(window, scene.callbacks);
