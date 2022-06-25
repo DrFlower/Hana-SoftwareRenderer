@@ -5,15 +5,14 @@ Scene::Scene(RenderBuffer* renderBuffer) {
 	float aspect = (float)this->frameBuffer->width / (float)this->frameBuffer->height;
 	camera = new Camera(CAMERA_POSITION, CAMERA_TARGET, aspect);
 
-	callbacks = callbacks_t();
-
-	callbacks.button_callback = button_callback;
-	callbacks.scroll_callback = scroll_callback;
-
 	light_dir.normalize();
 }
 
 void Scene::tick(float delta_time) {
+
+}
+
+void Scene::on_key_input(keycode_t key, int pressed) {
 
 }
 
@@ -22,7 +21,7 @@ Scene::~Scene() {
 }
 
 SingleModelScene::SingleModelScene(const char* modelName, RenderBuffer* renderBuffer) :Scene(renderBuffer) {
-	gameobject = new GameObject_StaticModel(modelName, Vector3f(0, 0, 0), Vector3f(0, 0, 90), Vector3f::One);
+	gameobject = new GameObject_StaticModel(modelName);
 
 	material = new Matrial();
 	material->diffuse_map = gameobject->model->get_diffuse_map();
@@ -33,24 +32,26 @@ SingleModelScene::SingleModelScene(const char* modelName, RenderBuffer* renderBu
 	material->gloss = 50;
 	material->bump_scale = 1;
 
-	//GroundShader ground_shader = GroundShader();
-	//ToonShader toon_shader = ToonShader();
-	//TextureShader texture_shader = TextureShader();
-	//TextureWithLightShader text_with_light_shader = TextureWithLightShader();
-	//BlinnShader blinn_shader = BlinnShader();
-	shader = new BlinnShader();
-
+	//IShader* _shaders[] = { new NormalMapShader(), new BlinnShader(), new TextureWithLightShader(), new TextureShader(), new ToonShader(), new GroundShader() };
+	//shaders = _shaders;
+	shaders[0] = new NormalMapShader();
+	shaders[1] = new BlinnShader();
+	shaders[2] = new TextureWithLightShader();
+	shaders[3] = new TextureShader();
+	shaders[4] = new ToonShader();
+	shaders[5] = new GroundShader();
 
 	enable_shadow = false;
 
-	draw_model = new DrawModel(gameobject, material, shader);
+	cur_shader_index = 0;
+
+	draw_model = new DrawModel(gameobject, material, shaders[cur_shader_index]);
 }
 
 SingleModelScene::~SingleModelScene() {
 	delete draw_model;
 	delete gameobject;
 	delete material;
-	delete shader;
 }
 
 void SingleModelScene::tick(float delta_time) {
@@ -59,10 +60,29 @@ void SingleModelScene::tick(float delta_time) {
 	draw_model->draw(camera, frameBuffer, enable_shadow);
 }
 
+void SingleModelScene::on_key_input(keycode_t key, int pressed) {
+	if (pressed)
+	{
+		switch (key)
+		{
+		case KEY_Q:
+			delete draw_model;
+			cur_shader_index = (cur_shader_index + 1 + 6) % 6;
+			draw_model = new DrawModel(gameobject, material, shaders[cur_shader_index]);
+			break;
+		case KEY_E:
+			enable_shadow = !enable_shadow;
+			break;
+		default:
+			break;
+		}
+	}
+}
+
 MultiModelScene::MultiModelScene(RenderBuffer* renderBuffer) :Scene(renderBuffer) {
 
 	GameObject_StaticModel* go_1 = new GameObject_StaticModel("african_head.obj", Vector3f(0, 0, -2), Vector3f::Zero, Vector3f::One);
-	GameObject_StaticModel* go_2 = new GameObject_StaticModel("floor.obj", Vector3f(0, -4, -2), Vector3f(-90, 0, 0), Vector3f(0.2f, 0.2f, 0.2f));
+	GameObject_StaticModel* go_2 = new GameObject_StaticModel("floor.obj", Vector3f(0, -10, -2), Vector3f(-90, 0, 0), Vector3f(0.5f, 0.5f, 0.5f));
 
 	gameobject = new GameObject_StaticModel[2]{ *go_1 ,*go_2 };
 

@@ -5,6 +5,7 @@
 #include "camera.h"
 #include "input.h"
 #include "platform.h"
+#include <vector>
 
 static Vector3f light_dir = Vector3f(1, 1, 1).normalize();
 static Color AMBIENT = Color(54.f / 255, 58.f / 255, 66.f / 255);
@@ -43,6 +44,8 @@ public:
 		shader_data->matrial = material;
 
 		shadow_draw_data = nullptr;
+		shadow_shader = nullptr;
+		shdaow_map = nullptr;
 
 		draw_data = new DrawData();
 		draw_data->model = gameobject->model;
@@ -77,6 +80,7 @@ public:
 		float aspect = (float)frameBuffer->width / (float)frameBuffer->height;
 		shader_data->light_vp_matrix = orthographic(aspect, 1, 0, 5) * lookat(Vector3f(1, 1, 1), Vector3f(0, 0, 0), { 0, 1, 0 });
 		shader_data->camera_vp_matrix = projection_matrix * view_matrix;
+		shader_data->enable_shadow = enable_shadow;
 
 		if (enable_shadow)
 		{
@@ -111,25 +115,27 @@ class Scene {
 public:
 	Camera* camera;
 	RenderBuffer* frameBuffer;
-	callbacks_t callbacks;
 	Scene(RenderBuffer* frameBuffer);
 	~Scene();
 
 	virtual void tick(float delta_time);
+	virtual void on_key_input(keycode_t key, int pressed);
 };
 
 class SingleModelScene :public Scene {
 private:
 	GameObject_StaticModel* gameobject;
 	Matrial* material;
-	IShader* shader;
+	IShader* shaders[6];
 	DrawModel* draw_model;
+	int cur_shader_index;
 	bool enable_shadow;
 public:
 	SingleModelScene(const char* modelName, RenderBuffer* renderBuffer);
 	~SingleModelScene();
 
 	void tick(float delta_time) override;
+	void on_key_input(keycode_t key, int pressed) override;
 };
 
 class MultiModelScene :public Scene {

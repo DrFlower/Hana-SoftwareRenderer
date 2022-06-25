@@ -16,24 +16,35 @@ static const char* const WINDOW_TITLE = "Hana-SoftwareRenderer";
 static const int WINDOW_WIDTH = 1000;
 static const int WINDOW_HEIGHT = 600;
 
-Model* model = NULL;
+int scene_count = 2;
+Scene* scene = nullptr;
+RenderBuffer* framebuffer = nullptr;
 
-//Matrix4x4 camera_get_light_view_matrix(Vector3f position, Vector3f target, Vector3f UP) {
-//	Matrix4x4 m = lookat(position, target, UP);
-//	return m;
-//}
-//
-//static Matrix4x4 get_light_proj_matrix(float aspect, float size,
-//	float z_near, float z_far) {
-//	return orthographic(aspect, size, z_near, z_far);
-//}
+Scene* load_scene(int scene_index) {
+	switch (scene_index)
+	{
+	case 0:
+		return new SingleModelScene("african_head.obj", framebuffer);
+	case 1:
+		return new SingleModelScene("diablo3_pose.obj", framebuffer); 
+	default:
+		return new SingleModelScene("african_head.obj", framebuffer);
+		break;
+	}
+}
+
+
+void key_callback(window_t* window, keycode_t key, int pressed) {
+	if (scene)
+	{
+		scene->on_key_input(key, pressed);
+	}
+}
 
 int main()
 {
 	platform_initialize();
 	window_t* window;
-	RenderBuffer* framebuffer = nullptr;
-	RenderBuffer* shdaow_map = nullptr;
 	Record record = Record();
 	float aspect;
 	float prev_time;
@@ -47,21 +58,36 @@ int main()
 	prev_time = platform_get_time();
 	print_time = prev_time;
 
-	//SingleModelScene scene = SingleModelScene("african_head.obj", framebuffer);
-	MultiModelScene scene = MultiModelScene(framebuffer);
+	int scene_index = 0;
+
+	scene = load_scene(scene_index);
+
+	callbacks_t callbacks = callbacks_t();
+
+	callbacks.button_callback = button_callback;
+	callbacks.scroll_callback = scroll_callback;
+	callbacks.key_callback = key_callback;
 
 	window_set_userdata(window, &record);
-	input_set_callbacks(window, scene.callbacks);
-
+	input_set_callbacks(window, callbacks);
 
 
 	while (!window_should_close(window)) {
 		float curr_time = platform_get_time();
 		float delta_time = curr_time - prev_time;
 
-		update_camera(window, scene.camera, &record);
+		update_camera(window, (*scene).camera, &record);
 
-		scene.tick(delta_time);
+		if (input_key_pressed(window, KEY_W)) {
+			scene_index = (scene_index - 1 + scene_count) % scene_count;
+			scene = load_scene(scene_index);
+		}
+		else if (input_key_pressed(window, KEY_S)) {
+			scene_index = (scene_index + 1 + scene_count) % scene_count;
+			scene = load_scene(scene_index);
+		}
+
+		scene->tick(delta_time);
 
 		num_frames += 1;
 		if (curr_time - print_time >= 1) {
@@ -87,6 +113,7 @@ int main()
 		input_poll_events();
 	}
 
-	window_destroy(window);
+	delete scene;
 	delete framebuffer;
+	window_destroy(window);
 }

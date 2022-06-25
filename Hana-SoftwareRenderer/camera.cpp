@@ -25,8 +25,8 @@ Camera::Camera(Vector3f position, Vector3f target, float aspect) {
 
 void Camera::set_transform(Vector3f position, Vector3f target) {
 	assert((position - target).normal() > EPSILON);
-	position = position;
-	target = target;
+	this->position = position;
+	this->target = target;
 }
 
 static Vector3f calculate_pan(Vector3f from_camera, Motion motion) {

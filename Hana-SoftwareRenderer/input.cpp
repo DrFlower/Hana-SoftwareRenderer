@@ -69,7 +69,7 @@ void update_camera(window_t* window, Camera* camera,
 		record->pan_pos = cursor_pos;
 	}
 	if (input_key_pressed(window, KEY_SPACE)) {
-		camera->set_transform(CAMERA_POSITION, CAMERA_TARGET);
+ 		camera->set_transform(CAMERA_POSITION, CAMERA_TARGET);
 	}
 	else {
 		Motion motion;

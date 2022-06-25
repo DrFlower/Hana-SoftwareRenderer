@@ -18,6 +18,7 @@ struct ShaderData {
 	Matrial* matrial;
 	RenderBuffer* targetBuffer;
 	RenderBuffer* shadow_map;
+	bool enable_shadow;
 	Vector3f view_Pos;
 	Vector3f light_dir;
 	Color light_color;
@@ -112,7 +113,7 @@ struct IShader {
 
 	int is_in_shadow(Vector4f depth_pos, float n_dot_l) {
 
-		if (shader_data->shadow_map)
+		if (shader_data->enable_shadow && shader_data->shadow_map)
 		{
 			Vector3f ndc_coords;
 			ndc_coords = proj<3>(depth_pos / depth_pos[3]);
