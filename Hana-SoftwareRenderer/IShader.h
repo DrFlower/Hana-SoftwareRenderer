@@ -115,14 +115,17 @@ struct IShader {
 
 		if (shader_data->enable_shadow && shader_data->shadow_map)
 		{
+			float widht = shader_data->shadow_map->width;
+			float height = shader_data->shadow_map->height;
+
 			Vector3f ndc_coords;
 			ndc_coords = proj<3>(depth_pos / depth_pos[3]);
-			Vector3f pos = viewport_transform(shader_data->shadow_map->width, shader_data->shadow_map->height, ndc_coords);
+			Vector3f pos = viewport_transform(widht, height, ndc_coords);
 			float depth_bias = 0.05f * (1 - n_dot_l);
 			if (depth_bias < 0.005f) depth_bias = 0.01f;
 			float current_depth = depth_pos[2] - depth_bias;
 
-			if (pos.x >= shader_data->shadow_map->width || pos.y >= shader_data->shadow_map->height)
+			if (pos.x < 0 || pos.y < 0 || pos.x >= widht || pos.y >= height)
 				return 0;
 
 			float closest_depth = shader_data->shadow_map->get_color(pos.x, pos.y).r;

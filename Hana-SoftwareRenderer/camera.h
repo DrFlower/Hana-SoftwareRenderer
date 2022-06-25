@@ -23,6 +23,8 @@ public:
 	Vector3f get_forward();
 	Matrix4x4 get_view_matrix();
 	Matrix4x4 get_proj_matrix();
+
+	Vector3f get_target_position();
 };
 
 #endif

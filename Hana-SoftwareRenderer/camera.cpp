@@ -91,3 +91,7 @@ Matrix4x4 Camera::get_proj_matrix() {
 	Matrix4x4 m = perspective(FOVY, aspect, NEAR, FAR);
 	return m;
 }
+
+Vector3f Camera::get_target_position() {
+	return target;
+}

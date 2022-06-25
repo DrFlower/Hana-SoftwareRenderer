@@ -16,7 +16,7 @@ static const char* const WINDOW_TITLE = "Hana-SoftwareRenderer";
 static const int WINDOW_WIDTH = 1000;
 static const int WINDOW_HEIGHT = 600;
 
-int scene_count = 2;
+int scene_count = 3;
 Scene* scene = nullptr;
 RenderBuffer* framebuffer = nullptr;
 
@@ -26,7 +26,9 @@ Scene* load_scene(int scene_index) {
 	case 0:
 		return new SingleModelScene("african_head.obj", framebuffer);
 	case 1:
-		return new SingleModelScene("diablo3_pose.obj", framebuffer); 
+		return new SingleModelScene("diablo3_pose.obj", framebuffer);
+	case 2:
+		return new MultiModelScene(framebuffer);
 	default:
 		return new SingleModelScene("african_head.obj", framebuffer);
 		break;

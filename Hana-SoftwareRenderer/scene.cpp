@@ -1,11 +1,12 @@
 #include "scene.h"
+#include "macro.h"
 
 Scene::Scene(RenderBuffer* renderBuffer) {
 	this->frameBuffer = renderBuffer;
 	float aspect = (float)this->frameBuffer->width / (float)this->frameBuffer->height;
 	camera = new Camera(CAMERA_POSITION, CAMERA_TARGET, aspect);
-
-	light_dir.normalize();
+	light = new GameObject(Vector3f(2, 2, 2));
+	enable_shadow = true;
 }
 
 void Scene::tick(float delta_time) {
@@ -13,11 +14,28 @@ void Scene::tick(float delta_time) {
 }
 
 void Scene::on_key_input(keycode_t key, int pressed) {
-
+	if (pressed)
+	{
+		switch (key)
+		{
+		case KEY_A:
+			light->transform.position = proj<3>(rotate(TO_RADIANS(-5), 0, 1, 1) * embed<4>(light->transform.position, 1.f));
+			break;
+		case KEY_D:
+			light->transform.position = proj<3>(rotate(TO_RADIANS(5), 0, 1, 1) * embed<4>(light->transform.position, 1.f));
+			break;
+		case KEY_E:
+			enable_shadow = !enable_shadow;
+			break;
+		default:
+			break;
+		}
+	}
 }
 
 Scene::~Scene() {
 	delete camera;
+	delete light;
 }
 
 SingleModelScene::SingleModelScene(const char* modelName, RenderBuffer* renderBuffer) :Scene(renderBuffer) {
@@ -41,17 +59,15 @@ SingleModelScene::SingleModelScene(const char* modelName, RenderBuffer* renderBu
 	shaders[4] = new ToonShader();
 	shaders[5] = new GroundShader();
 
-	enable_shadow = false;
-
 	cur_shader_index = 0;
 
-	draw_model = new DrawModel(gameobject, material, shaders[cur_shader_index]);
+	draw_model = new DrawModel(light, gameobject, material, shaders[cur_shader_index]);
 }
 
 SingleModelScene::~SingleModelScene() {
 	delete draw_model;
-	delete gameobject;
 	delete material;
+	delete gameobject;
 }
 
 void SingleModelScene::tick(float delta_time) {
@@ -61,6 +77,8 @@ void SingleModelScene::tick(float delta_time) {
 }
 
 void SingleModelScene::on_key_input(keycode_t key, int pressed) {
+	Scene::on_key_input(key, pressed);
+
 	if (pressed)
 	{
 		switch (key)
@@ -68,10 +86,7 @@ void SingleModelScene::on_key_input(keycode_t key, int pressed) {
 		case KEY_Q:
 			delete draw_model;
 			cur_shader_index = (cur_shader_index + 1 + 6) % 6;
-			draw_model = new DrawModel(gameobject, material, shaders[cur_shader_index]);
-			break;
-		case KEY_E:
-			enable_shadow = !enable_shadow;
+			draw_model = new DrawModel(light, gameobject, material, shaders[cur_shader_index]);
 			break;
 		default:
 			break;
@@ -81,8 +96,8 @@ void SingleModelScene::on_key_input(keycode_t key, int pressed) {
 
 MultiModelScene::MultiModelScene(RenderBuffer* renderBuffer) :Scene(renderBuffer) {
 
-	GameObject_StaticModel* go_1 = new GameObject_StaticModel("african_head.obj", Vector3f(0, 0, -2), Vector3f::Zero, Vector3f::One);
-	GameObject_StaticModel* go_2 = new GameObject_StaticModel("floor.obj", Vector3f(0, -10, -2), Vector3f(-90, 0, 0), Vector3f(0.5f, 0.5f, 0.5f));
+	GameObject_StaticModel* go_1 = new GameObject_StaticModel("african_head.obj");
+	GameObject_StaticModel* go_2 = new GameObject_StaticModel("floor.obj", Vector3f(0, -1, 0), Vector3f(-90, 0, 0), Vector3f(0.5f, 0.5f, 0.5f));
 
 	gameobject = new GameObject_StaticModel[2]{ *go_1 ,*go_2 };
 
@@ -117,9 +132,7 @@ MultiModelScene::MultiModelScene(RenderBuffer* renderBuffer) :Scene(renderBuffer
 	shader = new BlinnShader[2]{ *shader_1 ,*shader_2 };
 
 
-	enable_shadow = false;
-
-	draw_model = new DrawModel[2]{ {go_1, m_1, shader_1},{go_2, m_2, shader_2} };
+	draw_model = new DrawModel[2]{ {light,go_1, m_1, shader_1},{light,go_2, m_2, shader_2} };
 }
 
 MultiModelScene::~MultiModelScene() {

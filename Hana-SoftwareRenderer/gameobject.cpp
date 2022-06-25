@@ -17,9 +17,6 @@ Matrix4x4 GameObject::GetModelMatrix() {
 	return m_translation * m_rotate * m_scale;
 }
 
-
-GameObject_RotateAround::GameObject_RotateAround(Vector3f position, Vector3f rotation, Vector3f scale) :GameObject(position, rotation, scale) {}
-
 GameObject_StaticModel::GameObject_StaticModel(Vector3f position, Vector3f rotation, Vector3f scale) :GameObject(position, rotation, scale) {}
 
 GameObject_StaticModel::GameObject_StaticModel(const char* filename, Vector3f position, Vector3f rotation, Vector3f scale) :GameObject(position, rotation, scale) {
@@ -29,8 +26,3 @@ GameObject_StaticModel::GameObject_StaticModel(const char* filename, Vector3f po
 GameObject_StaticModel::~GameObject_StaticModel() {
 	delete model;
 }
-
-
-GameObject_MovingModel::GameObject_MovingModel(const char* filename, Vector3f position, Vector3f rotation, Vector3f scale) :GameObject_StaticModel(filename, position, rotation, scale) {}
-
-GameObject_AnimationModel::GameObject_AnimationModel(const char* filename, Vector3f position, Vector3f rotation, Vector3f scale) :GameObject_StaticModel(filename, position, rotation, scale) {}
