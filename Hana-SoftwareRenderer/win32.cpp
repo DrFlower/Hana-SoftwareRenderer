@@ -1,4 +1,4 @@
-#include <assert.h>
+﻿#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 #include <direct.h>
@@ -28,6 +28,8 @@ struct window {
     char buttons[BUTTON_NUM];
     callbacks_t callbacks;
     void *userdata;
+    HWND text_handle;
+    char* text;
 };
 
 /* platform initialization */
@@ -129,6 +131,7 @@ static void register_class(void) {
     window_class.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
     window_class.lpszMenuName = NULL;
     window_class.lpszClassName = WINDOW_CLASS_NAME;
+    window_class.hbrBackground = CreateSolidBrush(RGB(0, 0, 0));
     class_atom = RegisterClass(&window_class);
     assert(class_atom != 0);
     UNUSED_VAR(class_atom);
@@ -192,6 +195,7 @@ static HWND create_window(const char *title_, int width, int height) {
     handle = CreateWindow(WINDOW_CLASS_NAME, title, style,
                           CW_USEDEFAULT, CW_USEDEFAULT, width, height,
                           NULL, NULL, GetModuleHandle(NULL), NULL);
+
     assert(handle != NULL);
     return handle;
 }
@@ -235,15 +239,24 @@ static void create_surface(HWND handle, int width, int height,
     *out_memory_dc = memory_dc;
 }
 
-window_t *window_create(const char *title, int width, int height) {
+window_t *window_create(const char *title, int width, int height, int text_width, int text_height, char* text) {
     window_t *window;
     HWND handle;
     image_t *surface;
     HDC memory_dc;
+    HWND text_handle;
 
     assert(g_initialized && width > 0 && height > 0);
 
     handle = create_window(title, width, height);
+
+    text_handle = CreateWindow(TEXT("static"), TEXT("static"), WS_CHILD | WS_VISIBLE | WS_TABSTOP,
+        0, 0, text_width, text_height,
+        handle, HMENU(21), GetModuleHandle(NULL), NULL);
+
+    SetBkColor(GetDC(text_handle), RGB(0, 0, 0));
+    SetTextColor(GetDC(text_handle), RGB(255, 0, 0));
+
     create_surface(handle, width, height, &surface, &memory_dc);
 
     window = (window_t*)malloc(sizeof(window_t));
@@ -251,6 +264,8 @@ window_t *window_create(const char *title, int width, int height) {
     window->handle = handle;
     window->memory_dc = memory_dc;
     window->surface = surface;
+    window->text = text;
+    window->text_handle = text_handle;
 
     SetProp(handle, WINDOW_ENTRY_NAME, window);
     ShowWindow(handle, SW_SHOW);
@@ -287,7 +302,22 @@ static void present_surface(window_t *window) {
     image_t *surface = window->surface;
     int width = surface->width;
     int height = surface->height;
+
     BitBlt(window_dc, 0, 0, width, height, memory_dc, 0, 0, SRCCOPY);
+
+#ifdef UNICODE
+        char* text = window->text;
+        wchar_t* wc;
+        int len = MultiByteToWideChar(CP_ACP, 0, text, strlen(text), NULL, 0);
+        wc = new wchar_t[len + 1];
+        MultiByteToWideChar(CP_ACP, 0, text, strlen(text), wc, len);
+        wc[len] = '\0';
+        SetWindowText(window->text_handle, wc);
+        delete[] wc;
+#else
+        SetWindowText(window->text_handle, window->text);
+#endif // !UNICODE
+    
     ReleaseDC(window->handle, window_dc);
 }
 

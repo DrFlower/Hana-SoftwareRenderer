@@ -94,4 +94,5 @@ Matrix4x4 Camera::get_proj_matrix() {
 
 Vector3f Camera::get_target_position() {
 	return target;
+	//return Vector3f::Zero;
 }

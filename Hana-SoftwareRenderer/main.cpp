@@ -1,6 +1,4 @@
-#include <vector>
-#include <iostream>
-#include "tgaimage.h"
+﻿#include "tgaimage.h"
 #include "model.h"
 #include "graphics.h"
 #include "iostream"
@@ -15,31 +13,50 @@
 static const char* const WINDOW_TITLE = "Hana-SoftwareRenderer";
 static const int WINDOW_WIDTH = 1000;
 static const int WINDOW_HEIGHT = 600;
+static const int WINDOW_TEXT_WIDTH = 250;
+static const int WINDOW_TEXT_HEIGHT = 310;
 
-int scene_count = 3;
-Scene* scene = nullptr;
+struct SceneInfo {
+	const char* name;
+	Scene* scene;
+};
+
+int scene_count = 2;
+SceneInfo scene_info;
 RenderBuffer* framebuffer = nullptr;
 
-Scene* load_scene(int scene_index) {
+SceneInfo load_scene(int scene_index) {
+	if (scene_info.scene)
+	{
+		delete scene_info.scene;
+	}
+
+	SceneInfo ret;
+
 	switch (scene_index)
 	{
 	case 0:
-		return new SingleModelScene("african_head.obj", framebuffer);
+		ret.name = "1.african_head";
+		ret.scene = new SingleModelScene("african_head.obj", framebuffer);
+		break;
 	case 1:
-		return new SingleModelScene("diablo3_pose.obj", framebuffer);
-	case 2:
-		return new MultiModelScene(framebuffer);
+		ret.name = "2.diablo3_pose";
+		ret.scene = new SingleModelScene("diablo3_pose.obj", framebuffer);
+		break;
 	default:
-		return new SingleModelScene("african_head.obj", framebuffer);
+		ret.name = "1.african_head";
+		ret.scene = new SingleModelScene("african_head.obj", framebuffer);
 		break;
 	}
+
+	return ret;
 }
 
 
 void key_callback(window_t* window, keycode_t key, int pressed) {
-	if (scene)
+	if (scene_info.scene)
 	{
-		scene->on_key_input(key, pressed);
+		scene_info.scene->on_key_input(key, pressed);
 	}
 }
 
@@ -52,8 +69,10 @@ int main()
 	float prev_time;
 	float print_time;
 	int num_frames;
-
-	window = window_create(WINDOW_TITLE, WINDOW_WIDTH, WINDOW_HEIGHT);
+	const int text_size = 600;
+	char screen_text[text_size];
+	snprintf(screen_text, text_size, "fps: - -, avg: - -ms\n");
+	window = window_create(WINDOW_TITLE, WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TEXT_WIDTH, WINDOW_TEXT_HEIGHT, screen_text);
 	framebuffer = new RenderBuffer(WINDOW_WIDTH, WINDOW_HEIGHT);
 
 	num_frames = 0;
@@ -62,7 +81,7 @@ int main()
 
 	int scene_index = 0;
 
-	scene = load_scene(scene_index);
+	scene_info = load_scene(scene_index);
 
 	callbacks_t callbacks = callbacks_t();
 
@@ -73,33 +92,55 @@ int main()
 	window_set_userdata(window, &record);
 	input_set_callbacks(window, callbacks);
 
-
+	int show_num_frames = 0;
+	int show_avg_millis = 0;
 	while (!window_should_close(window)) {
 		float curr_time = platform_get_time();
 		float delta_time = curr_time - prev_time;
 
-		update_camera(window, (*scene).camera, &record);
+
+		update_camera(window, scene_info.scene->camera, &record);
 
 		if (input_key_pressed(window, KEY_W)) {
 			scene_index = (scene_index - 1 + scene_count) % scene_count;
-			scene = load_scene(scene_index);
+			scene_info = load_scene(scene_index);
 		}
 		else if (input_key_pressed(window, KEY_S)) {
 			scene_index = (scene_index + 1 + scene_count) % scene_count;
-			scene = load_scene(scene_index);
+			scene_info = load_scene(scene_index);
 		}
 
-		scene->tick(delta_time);
+		scene_info.scene->tick(delta_time);
 
 		num_frames += 1;
 		if (curr_time - print_time >= 1) {
 			int sum_millis = (int)((curr_time - print_time) * 1000);
 			int avg_millis = sum_millis / num_frames;
-			printf("fps: %3d, avg: %3d ms\n", num_frames, avg_millis);
+			//printf("fps: %3d, avg: %3d ms\n", num_frames, avg_millis);
+
+			show_num_frames = num_frames;
+			show_avg_millis = avg_millis;
 			num_frames = 0;
 			print_time = curr_time;
 		}
 		prev_time = curr_time;
+
+
+		snprintf(screen_text, text_size, "");
+
+		char line[50] = "";
+
+		snprintf(line, 50, "fps: %3d, avg: %3d ms\n\n", show_num_frames, show_avg_millis);
+		strcat(screen_text, line);
+
+		snprintf(line, 50, "scene: %s\n", scene_info.name);
+		strcat(screen_text, line);
+		snprintf(line, 50, "press key [W] or [S] to switch scene\n\n");
+		strcat(screen_text, line);
+
+
+		strcat(screen_text, scene_info.scene->get_text());
+
 
 		window_draw_buffer(window, framebuffer);
 
@@ -115,7 +156,7 @@ int main()
 		input_poll_events();
 	}
 
-	delete scene;
+	delete scene_info.scene;
 	delete framebuffer;
 	window_destroy(window);
 }

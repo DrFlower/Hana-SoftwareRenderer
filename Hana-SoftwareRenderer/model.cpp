@@ -41,7 +41,7 @@ Model::Model(const char* filename) : verts_(), faces_(), norms_(), uv_(), diffus
 			faces_.push_back(f);
 		}
 	}
-	std::cerr << "# v# " << verts_.size() << " f# " << faces_.size() << " vt# " << uv_.size() << " vn# " << norms_.size() << std::endl;
+	//std::cerr << "# v# " << verts_.size() << " f# " << faces_.size() << " vt# " << uv_.size() << " vn# " << norms_.size() << std::endl;
 	load_texture(filename, "_diffuse.tga", diffusemap_);
 	load_texture(filename, "_nm_tangent.tga", normalmap_);
 	load_texture(filename, "_spec.tga", specularmap_);
@@ -76,7 +76,8 @@ void Model::load_texture(std::string filename, const char* suffix, TGAImage& img
 	size_t dot = texfile.find_last_of(".");
 	if (dot != std::string::npos) {
 		texfile = texfile.substr(0, dot) + std::string(suffix);
-		std::cerr << "texture file " << texfile << " loading " << (img.read_tga_file(texfile.c_str()) ? "ok" : "failed") << std::endl;
+		//std::cerr << "texture file " << texfile << " loading " << (img.read_tga_file(texfile.c_str()) ? "ok" : "failed") << std::endl;
+		img.read_tga_file(texfile.c_str());
 		img.flip_vertically();
 	}
 }
