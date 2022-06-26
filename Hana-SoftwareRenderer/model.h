@@ -3,7 +3,7 @@
 #include <vector>
 #include <string>
 #include "tgaimage.h"
-#include "api.h"
+#include "mathapi.h"
 
 class Model {
 private:

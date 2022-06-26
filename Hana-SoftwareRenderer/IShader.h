@@ -2,7 +2,7 @@
 
 #include "tgaimage.h"
 #include "renderbuffer.h"
-#include "api.h"
+#include "mathapi.h"
 
 struct Matrial {
 	TGAImage* diffuse_map;

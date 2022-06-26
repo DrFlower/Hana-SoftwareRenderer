@@ -1,22 +1,58 @@
 ﻿#include <assert.h>
 #include <stdlib.h>
-#include <string.h>
 #include <direct.h>
 #include <windows.h>
-//Hana Begin
-//#include "../core/graphics.h"
-//#include "../core/image.h"
-//#include "../core/macro.h"
-//#include "../core/platform.h"
-//#include "../core/private.h"
-//Hana End
-
-//Hana Begin
 #include "graphics.h"
-#include "image.h"
-#include "macro.h"
 #include "platform.h"
-//Hana End
+
+#define LINE_SIZE 256
+
+typedef enum {
+    FORMAT_LDR,
+    FORMAT_HDR
+} format_t;
+
+typedef struct {
+    format_t format;
+    int width, height, channels;
+    unsigned char *ldr_buffer;
+    float *hdr_buffer;
+} image_t;
+
+image_t* image_create(int width, int height, int channels, format_t format) {
+    int num_elems = width * height * channels;
+    image_t* image;
+
+    assert(width > 0 && height > 0 && channels >= 1 && channels <= 4);
+    assert(format == FORMAT_LDR || format == FORMAT_HDR);
+
+    image = (image_t*)malloc(sizeof(image_t));
+    image->format = format;
+    image->width = width;
+    image->height = height;
+    image->channels = channels;
+    image->ldr_buffer = NULL;
+    image->hdr_buffer = NULL;
+
+    if (format == FORMAT_LDR) {
+        int size = sizeof(unsigned char) * num_elems;
+        image->ldr_buffer = (unsigned char*)malloc(size);
+        memset(image->ldr_buffer, 0, size);
+    }
+    else {
+        int size = sizeof(float) * num_elems;
+        image->hdr_buffer = (float*)malloc(size);
+        memset(image->hdr_buffer, 0, size);
+    }
+
+    return image;
+}
+
+void image_release(image_t* image) {
+    free(image->ldr_buffer);
+    free(image->hdr_buffer);
+    free(image);
+}
 
 struct window {
     HWND handle;
@@ -131,10 +167,9 @@ static void register_class(void) {
     window_class.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
     window_class.lpszMenuName = NULL;
     window_class.lpszClassName = WINDOW_CLASS_NAME;
-    window_class.hbrBackground = CreateSolidBrush(RGB(0, 0, 0));
     class_atom = RegisterClass(&window_class);
     assert(class_atom != 0);
-    UNUSED_VAR(class_atom);
+    ((void)(class_atom));
 }
 
 static void unregister_class(void) {
@@ -322,10 +357,6 @@ static void present_surface(window_t *window) {
 }
 
 void window_draw_buffer(window_t *window, RenderBuffer *buffer) {
-    //Hana Begin
-    //private_blit_bgr(buffer, window->surface);
-    //Hana End
-
     int width = window->surface->width;
     int height = window->surface->height;
     int r, c;

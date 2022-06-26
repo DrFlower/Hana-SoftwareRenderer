@@ -16,7 +16,6 @@ public:
 	static Color Green;
 	static Color Blue;
 	static Color Black;
-	
 
 	float& operator[](const size_t i);
 

@@ -1,11 +1,9 @@
 #pragma once
 
-#include "api.h"
+#include "mathapi.h"
 #include "gameobject.h"
 #include "camera.h"
-#include "input.h"
 #include "platform.h"
-#include <vector>
 
 static Color AMBIENT = Color(54.f / 255, 58.f / 255, 66.f / 255);
 static Color LightColor = Color(255.f / 255, 244.f / 255, 214.f / 255);

@@ -1,5 +1,4 @@
 #include "gameobject.h"
-#include "macro.h"
 
 GameObject::GameObject(Vector3f position, Vector3f rotation, Vector3f scale) {
 	transform.position = position;

@@ -8,9 +8,6 @@
     <Filter Include="shaders">
       <UniqueIdentifier>{fad1a95b-a8a6-4acb-beae-2a472a9dca7c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Input">
-      <UniqueIdentifier>{c60f6147-683a-453d-b699-51b7aa44d3a6}</UniqueIdentifier>
-    </Filter>
     <Filter Include="math">
       <UniqueIdentifier>{3dfc5199-570d-4554-bb12-7d275489267f}</UniqueIdentifier>
     </Filter>
@@ -24,13 +21,13 @@
     <Filter Include="scene">
       <UniqueIdentifier>{8ad0d5fc-c2e9-4dc4-9b41-d887abbe883a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="UI">
+      <UniqueIdentifier>{3e12a075-70f4-4062-8f01-7f1792e2df02}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="IShader.cpp">
       <Filter>shaders</Filter>
-    </ClCompile>
-    <ClCompile Include="input.cpp">
-      <Filter>Input</Filter>
     </ClCompile>
     <ClCompile Include="vector.cpp">
       <Filter>math</Filter>
@@ -41,16 +38,7 @@
     <ClCompile Include="graphics.cpp">
       <Filter>core</Filter>
     </ClCompile>
-    <ClCompile Include="image.cpp">
-      <Filter>core</Filter>
-    </ClCompile>
     <ClCompile Include="main.cpp">
-      <Filter>core</Filter>
-    </ClCompile>
-    <ClCompile Include="maths_old.cpp">
-      <Filter>core</Filter>
-    </ClCompile>
-    <ClCompile Include="win32.cpp">
       <Filter>core</Filter>
     </ClCompile>
     <ClCompile Include="renderbuffer.cpp">
@@ -74,21 +62,12 @@
     <ClCompile Include="gameobject.cpp">
       <Filter>scene</Filter>
     </ClCompile>
+    <ClCompile Include="win32.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="platform.h">
-      <Filter>core</Filter>
-    </ClInclude>
-    <ClInclude Include="macro.h">
-      <Filter>core</Filter>
-    </ClInclude>
-    <ClInclude Include="image.h">
-      <Filter>core</Filter>
-    </ClInclude>
     <ClInclude Include="graphics.h">
-      <Filter>core</Filter>
-    </ClInclude>
-    <ClInclude Include="maths_old.h">
       <Filter>core</Filter>
     </ClInclude>
     <ClInclude Include="camera.h">
@@ -97,23 +76,14 @@
     <ClInclude Include="IShader.h">
       <Filter>shaders</Filter>
     </ClInclude>
-    <ClInclude Include="input.h">
-      <Filter>Input</Filter>
-    </ClInclude>
     <ClInclude Include="vector.h">
       <Filter>math</Filter>
-    </ClInclude>
-    <ClInclude Include="drawdata.h">
-      <Filter>core</Filter>
     </ClInclude>
     <ClInclude Include="renderbuffer.h">
       <Filter>core</Filter>
     </ClInclude>
     <ClInclude Include="matrix.h">
       <Filter>math</Filter>
-    </ClInclude>
-    <ClInclude Include="api.h">
-      <Filter>core</Filter>
     </ClInclude>
     <ClInclude Include="maths.h">
       <Filter>math</Filter>
@@ -132,6 +102,12 @@
     </ClInclude>
     <ClInclude Include="gameobject.h">
       <Filter>scene</Filter>
+    </ClInclude>
+    <ClInclude Include="platform.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="mathapi.h">
+      <Filter>math</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

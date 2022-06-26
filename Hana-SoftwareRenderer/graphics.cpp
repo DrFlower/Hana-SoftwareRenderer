@@ -1,9 +1,7 @@
 #include <assert.h>
 #include <math.h>
 #include <stdlib.h>
-#include <string.h>
 #include "graphics.h"
-#include "macro.h"
 
 /*
  * for viewport transformation, see subsection 2.12.1 of

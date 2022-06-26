@@ -141,10 +141,7 @@
     <ClCompile Include="color.cpp" />
     <ClCompile Include="gameobject.cpp" />
     <ClCompile Include="graphics.cpp" />
-    <ClCompile Include="image.cpp" />
-    <ClCompile Include="input.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="maths_old.cpp" />
     <ClCompile Include="maths.cpp" />
     <ClCompile Include="scene.cpp" />
     <ClCompile Include="vector.cpp" />
@@ -155,17 +152,12 @@
     <ClCompile Include="win32.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="api.h" />
+    <ClInclude Include="mathapi.h" />
     <ClInclude Include="camera.h" />
     <ClInclude Include="color.h" />
-    <ClInclude Include="drawdata.h" />
     <ClInclude Include="gameobject.h" />
     <ClInclude Include="graphics.h" />
-    <ClInclude Include="image.h" />
-    <ClInclude Include="input.h" />
     <ClInclude Include="IShader.h" />
-    <ClInclude Include="macro.h" />
-    <ClInclude Include="maths_old.h" />
     <ClInclude Include="maths.h" />
     <ClInclude Include="matrix.h" />
     <ClInclude Include="model.h" />

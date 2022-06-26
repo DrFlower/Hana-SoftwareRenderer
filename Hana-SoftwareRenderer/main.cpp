@@ -1,13 +1,6 @@
-﻿#include "tgaimage.h"
-#include "model.h"
-#include "graphics.h"
+﻿#include "graphics.h"
 #include "iostream"
 #include "platform.h"
-#include "math.h"
-#include "camera.h"
-#include "input.h"
-#include "IShader.h"
-#include "drawdata.h"
 #include "scene.h"
 
 static const char* const WINDOW_TITLE = "Hana-SoftwareRenderer";

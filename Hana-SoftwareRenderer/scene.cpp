@@ -1,5 +1,4 @@
 #include "scene.h"
-#include "macro.h"
 
 Scene::Scene(RenderBuffer* renderBuffer) {
 	this->frameBuffer = renderBuffer;
