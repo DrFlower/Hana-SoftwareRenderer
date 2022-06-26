@@ -16,7 +16,7 @@ struct SceneInfo {
 
 int scene_count = 2;
 SceneInfo scene_info;
-RenderBuffer* framebuffer = nullptr;
+RenderBuffer* frame_buffer = nullptr;
 
 SceneInfo load_scene(int scene_index) {
 	if (scene_info.scene)
@@ -30,15 +30,15 @@ SceneInfo load_scene(int scene_index) {
 	{
 	case 0:
 		ret.name = "1.african_head";
-		ret.scene = new SingleModelScene("african_head.obj", framebuffer);
+		ret.scene = new SingleModelScene("african_head.obj", frame_buffer);
 		break;
 	case 1:
 		ret.name = "2.diablo3_pose";
-		ret.scene = new SingleModelScene("diablo3_pose.obj", framebuffer);
+		ret.scene = new SingleModelScene("diablo3_pose.obj", frame_buffer);
 		break;
 	default:
 		ret.name = "1.african_head";
-		ret.scene = new SingleModelScene("african_head.obj", framebuffer);
+		ret.scene = new SingleModelScene("african_head.obj", frame_buffer);
 		break;
 	}
 
@@ -66,7 +66,7 @@ int main()
 	char screen_text[text_size];
 	snprintf(screen_text, text_size, "fps: - -, avg: - -ms\n");
 	window = window_create(WINDOW_TITLE, WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TEXT_WIDTH, WINDOW_TEXT_HEIGHT, screen_text);
-	framebuffer = new RenderBuffer(WINDOW_WIDTH, WINDOW_HEIGHT);
+	frame_buffer = new RenderBuffer(WINDOW_WIDTH, WINDOW_HEIGHT);
 
 	num_frames = 0;
 	prev_time = platform_get_time();
@@ -135,7 +135,7 @@ int main()
 		strcat(screen_text, scene_info.scene->get_text());
 
 
-		window_draw_buffer(window, framebuffer);
+		window_draw_buffer(window, frame_buffer);
 
 		record.orbit_delta = Vector2f(0, 0);
 		record.pan_delta = Vector2f(0, 0);
@@ -143,13 +143,13 @@ int main()
 		record.single_click = 0;
 		record.double_click = 0;
 
-		framebuffer->renderbuffer_clear_color(Color::Black);
-		framebuffer->renderbuffer_clear_depth(std::numeric_limits<float>::max());
+		frame_buffer->renderbuffer_clear_color(Color::Black);
+		frame_buffer->renderbuffer_clear_depth(std::numeric_limits<float>::max());
 
 		input_poll_events();
 	}
 
 	delete scene_info.scene;
-	delete framebuffer;
+	delete frame_buffer;
 	window_destroy(window);
 }
