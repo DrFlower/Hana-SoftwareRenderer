@@ -62,10 +62,10 @@ int main()
 	float prev_time;
 	float print_time;
 	int num_frames;
-	const int text_size = 600;
+	const int text_size = 500;
 	char screen_text[text_size];
 	snprintf(screen_text, text_size, "fps: - -, avg: - -ms\n");
-	window = window_create(WINDOW_TITLE, WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TEXT_WIDTH, WINDOW_TEXT_HEIGHT, screen_text);
+	window = window_create(WINDOW_TITLE, WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TEXT_WIDTH, WINDOW_TEXT_HEIGHT);
 	frame_buffer = new RenderBuffer(WINDOW_WIDTH, WINDOW_HEIGHT);
 
 	num_frames = 0;
@@ -87,6 +87,8 @@ int main()
 
 	int show_num_frames = 0;
 	int show_avg_millis = 0;
+	float refresh_screen_text_timer = 0;
+	const float REFRESH_SCREEN_TEXT_TIME = 0.1;
 	while (!window_should_close(window)) {
 		float curr_time = platform_get_time();
 		float delta_time = curr_time - prev_time;
@@ -109,7 +111,6 @@ int main()
 		if (curr_time - print_time >= 1) {
 			int sum_millis = (int)((curr_time - print_time) * 1000);
 			int avg_millis = sum_millis / num_frames;
-			//printf("fps: %3d, avg: %3d ms\n", num_frames, avg_millis);
 
 			show_num_frames = num_frames;
 			show_avg_millis = avg_millis;
@@ -118,24 +119,29 @@ int main()
 		}
 		prev_time = curr_time;
 
-
-		snprintf(screen_text, text_size, "");
-
-		char line[50] = "";
-
-		snprintf(line, 50, "fps: %3d, avg: %3d ms\n\n", show_num_frames, show_avg_millis);
-		strcat(screen_text, line);
-
-		snprintf(line, 50, "scene: %s\n", scene_info.name);
-		strcat(screen_text, line);
-		snprintf(line, 50, "press key [W] or [S] to switch scene\n\n");
-		strcat(screen_text, line);
-
-
-		strcat(screen_text, scene_info.scene->get_text());
-
-
 		window_draw_buffer(window, frame_buffer);
+
+		refresh_screen_text_timer += delta_time;
+		if (refresh_screen_text_timer > REFRESH_SCREEN_TEXT_TIME)
+		{
+			snprintf(screen_text, text_size, "");
+
+			char line[50] = "";
+
+			snprintf(line, 50, "fps: %3d, avg: %3d ms\n\n", show_num_frames, show_avg_millis);
+			strcat(screen_text, line);
+
+			snprintf(line, 50, "scene: %s\n", scene_info.name);
+			strcat(screen_text, line);
+			snprintf(line, 50, "press key [W] or [S] to switch scene\n\n");
+			strcat(screen_text, line);
+
+			strcat(screen_text, scene_info.scene->get_text());
+			
+			window_draw_text(window, screen_text);
+			refresh_screen_text_timer -= REFRESH_SCREEN_TEXT_TIME;
+		}
+
 
 		record.orbit_delta = Vector2f(0, 0);
 		record.pan_delta = Vector2f(0, 0);

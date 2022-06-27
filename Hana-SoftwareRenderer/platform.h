@@ -17,12 +17,13 @@ void platform_initialize(void);
 void platform_terminate(void);
 
 /* window related functions */
-window_t* window_create(const char* title, int width, int height, int text_width, int text_height, char* text);
+window_t* window_create(const char* title, int width, int height, int text_width, int text_height);
 void window_destroy(window_t* window);
 int window_should_close(window_t* window);
 void window_set_userdata(window_t* window, void* userdata);
 void* window_get_userdata(window_t* window);
 void window_draw_buffer(window_t* window, RenderBuffer* buffer);
+void window_draw_text(window_t* window, char* text);
 
 /* input related functions */
 void input_poll_events(void);

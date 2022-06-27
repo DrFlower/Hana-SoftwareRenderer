@@ -64,8 +64,9 @@ struct window {
     char buttons[BUTTON_NUM];
     callbacks_t callbacks;
     void *userdata;
+    float text_width;
+    float text_height;
     HWND text_handle;
-    char* text;
 };
 
 /* platform initialization */
@@ -274,7 +275,7 @@ static void create_surface(HWND handle, int width, int height,
     *out_memory_dc = memory_dc;
 }
 
-window_t *window_create(const char *title, int width, int height, int text_width, int text_height, char* text) {
+window_t *window_create(const char *title, int width, int height, int text_width, int text_height) {
     window_t *window;
     HWND handle;
     image_t *surface;
@@ -299,7 +300,8 @@ window_t *window_create(const char *title, int width, int height, int text_width
     window->handle = handle;
     window->memory_dc = memory_dc;
     window->surface = surface;
-    window->text = text;
+    window->text_width = text_width;
+    window->text_height = text_height;
     window->text_handle = text_handle;
 
     SetProp(handle, WINDOW_ENTRY_NAME, window);
@@ -338,21 +340,8 @@ static void present_surface(window_t *window) {
     int width = surface->width;
     int height = surface->height;
 
-    BitBlt(window_dc, 0, 0, width, height, memory_dc, 0, 0, SRCCOPY);
-
-#ifdef UNICODE
-        char* text = window->text;
-        wchar_t* wc;
-        int len = MultiByteToWideChar(CP_ACP, 0, text, strlen(text), NULL, 0);
-        wc = new wchar_t[len + 1];
-        MultiByteToWideChar(CP_ACP, 0, text, strlen(text), wc, len);
-        wc[len] = '\0';
-        SetWindowText(window->text_handle, wc);
-        delete[] wc;
-#else
-        SetWindowText(window->text_handle, window->text);
-#endif // !UNICODE
-    
+    BitBlt(window_dc, window->text_width, 0, width, height, memory_dc, window->text_width, 0, SRCCOPY);
+    BitBlt(window_dc, 0, window->text_height, width, height, memory_dc, 0, window->text_height, SRCCOPY);
     ReleaseDC(window->handle, window_dc);
 }
 
@@ -378,6 +367,20 @@ void window_draw_buffer(window_t *window, RenderBuffer *buffer) {
     }
 
     present_surface(window);
+}
+
+void window_draw_text(window_t* window, char* text) {
+#ifdef UNICODE
+    wchar_t* wc;
+    int len = MultiByteToWideChar(CP_ACP, 0, text, strlen(text), NULL, 0);
+    wc = new wchar_t[len + 1];
+    MultiByteToWideChar(CP_ACP, 0, text, strlen(text), wc, len);
+    wc[len] = '\0';
+    SetWindowText(window->text_handle, wc);
+    delete[] wc;
+#else
+    SetWindowText(window->text_handle, window->text);
+#endif // !UNICODE
 }
 
 /* input related functions */
