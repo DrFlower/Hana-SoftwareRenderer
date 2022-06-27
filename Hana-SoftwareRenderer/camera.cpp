@@ -8,7 +8,7 @@
  * https://github.com/mrdoob/three.js/blob/master/examples/js/controls/OrbitControls.js
  */
 
-static const float NEAR = 0.2f;
+static const float NEAR = 0.1f;
 static const float FAR = 10000;
 static const float FOVY = TO_RADIANS(60);
 static const Vector3f UP = { 0, 1, 0 };
