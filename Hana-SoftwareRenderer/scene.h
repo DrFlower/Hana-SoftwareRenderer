@@ -12,7 +12,7 @@ class DrawModel {
 public:
 	GameObject* light;
 	GameObject_StaticModel* gameobject;
-	Matrial* material;
+	Material* material;
 	ShaderData* shader_data;
 	DrawData* shadow_draw_data;
 	DrawData* draw_data;
@@ -21,7 +21,7 @@ public:
 	ShadowShader* shadow_shader;
 
 
-	DrawModel(GameObject* light, GameObject_StaticModel* go, Matrial* material, IShader* shader)
+	DrawModel(GameObject* light, GameObject_StaticModel* go, Material* material, IShader* shader)
 	{
 		this->light = light;
 		this->gameobject = go;
@@ -80,14 +80,14 @@ public:
 				shadow_draw_data->model = gameobject->model;
 				shadow_draw_data->shader = shadow_shader;
 				shadow_draw_data->shader->shader_data = shader_data;
-				shadow_draw_data->renderbuffer = shdaow_map;
+				shadow_draw_data->render_buffer = shdaow_map;
 			}
 
 			graphics_draw_triangle(shadow_draw_data);
 			shader_data->shadow_map = shdaow_map;
 		}
 
-		draw_data->renderbuffer = frameBuffer;
+		draw_data->render_buffer = frameBuffer;
 		graphics_draw_triangle(draw_data);
 
 
@@ -122,7 +122,7 @@ public:
 class SingleModelScene :public Scene {
 private:
 	GameObject_StaticModel* gameobject;
-	Matrial* material;
+	Material* material;
 	ShaderInfo shaderInfos[6];
 	DrawModel* draw_model;
 	int cur_shader_index;
@@ -137,14 +137,14 @@ public:
 class MultiModelScene :public Scene {
 private:
 	GameObject_StaticModel* gameobject;
-	Matrial* material;
+	Material* material;
 	IShader* shader;
 	DrawModel* draw_model;
 public:
 	MultiModelScene(RenderBuffer* renderBuffer);
 	~MultiModelScene();
 
-	void AddModel(int index, const char* filename, Matrial* material, IShader* shader, Vector3f position = Vector3f::Zero, Vector3f rotation = Vector3f::Zero, Vector3f scale = Vector3f::One);
+	void AddModel(int index, const char* filename, Material* material, IShader* shader, Vector3f position = Vector3f::Zero, Vector3f rotation = Vector3f::Zero, Vector3f scale = Vector3f::One);
 
 	void tick(float delta_time) override;
 };

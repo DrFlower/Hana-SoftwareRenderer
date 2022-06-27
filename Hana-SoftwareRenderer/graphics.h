@@ -9,7 +9,7 @@
 struct DrawData {
 	Model* model;
 	IShader* shader;
-	RenderBuffer* renderbuffer;
+	RenderBuffer* render_buffer;
 };
 
 void graphics_draw_triangle(DrawData* app_data);

@@ -166,15 +166,14 @@ static Vector3f barycentric(Vector2f A, Vector2f B, Vector2f C, Vector2f P) {
 //}
 
 static void rasterize_triangle(DrawData* draw_data, shader_struct_v2f* v2f) {
-
-	RenderBuffer* render_buffer = draw_data->renderbuffer;
-
 	// 齐次除法 / 透视除法 (homogeneous division / perspective division)
 	Vector3f ndc_coords[3];
 	for (int i = 0; i < 3; i++) ndc_coords[i] = proj<3>(v2f[i].clip_pos / v2f[i].clip_pos[3]);
 
 	// 背面剔除
 	if (is_back_facing(ndc_coords)) return;
+
+	RenderBuffer* render_buffer = draw_data->render_buffer;
 
 	Vector2f screen_coords[3];
 	float screen_depth[3];
