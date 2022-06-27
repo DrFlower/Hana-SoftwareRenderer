@@ -96,9 +96,9 @@ Vector3f Camera::get_target_position() {
 	//return Vector3f::Zero;
 }
 
-Vector2f get_pos_delta(Vector2f old_pos, Vector2f new_pos) {
+Vector2f get_pos_delta(Vector2f old_pos, Vector2f new_pos, float window_height) {
 	Vector2f delta = new_pos - old_pos;
-	return delta / (float)WINDOW_HEIGHT_TMP;
+	return delta / window_height;
 }
 
 Vector2f get_cursor_pos(window_t* window) {
@@ -125,7 +125,7 @@ void button_callback(window_t* window, button_t button, int pressed) {
 		}
 		else {
 			float prev_time = record->release_time;
-			Vector2f pos_delta = get_pos_delta(record->orbit_pos, cursor_pos);
+			Vector2f pos_delta = get_pos_delta(record->orbit_pos, cursor_pos, record->window_height);
 			record->is_orbiting = 0;
 			record->orbit_delta = record->orbit_delta + pos_delta;
 			if (prev_time && curr_time - prev_time < CLICK_DELAY) {
@@ -144,7 +144,7 @@ void button_callback(window_t* window, button_t button, int pressed) {
 			record->pan_pos = cursor_pos;
 		}
 		else {
-			Vector2f pos_delta = get_pos_delta(record->pan_pos, cursor_pos);
+			Vector2f pos_delta = get_pos_delta(record->pan_pos, cursor_pos, record->window_height);
 			record->is_panning = 0;
 			record->pan_delta = record->pan_delta + pos_delta;
 		}
@@ -155,12 +155,12 @@ void update_camera(window_t* window, Camera* camera,
 	Record* record) {
 	Vector2f cursor_pos = get_cursor_pos(window);
 	if (record->is_orbiting) {
-		Vector2f pos_delta = get_pos_delta(record->orbit_pos, cursor_pos);
+		Vector2f pos_delta = get_pos_delta(record->orbit_pos, cursor_pos, record->window_height);
 		record->orbit_delta = record->orbit_delta + pos_delta;
 		record->orbit_pos = cursor_pos;
 	}
 	if (record->is_panning) {
-		Vector2f pos_delta = get_pos_delta(record->pan_pos, cursor_pos);
+		Vector2f pos_delta = get_pos_delta(record->pan_pos, cursor_pos, record->window_height);
 		record->pan_delta = record->pan_delta + pos_delta;
 		record->pan_pos = cursor_pos;
 	}

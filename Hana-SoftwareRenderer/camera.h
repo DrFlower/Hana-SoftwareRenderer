@@ -33,7 +33,6 @@ public:
 };
 
 static const float CLICK_DELAY = 0.25f;
-static const int WINDOW_HEIGHT_TMP = 600;
 
 struct Record {
 	/* orbit */
@@ -57,6 +56,8 @@ struct Record {
 	int single_click;
 	int double_click;
 	Vector2f click_pos;
+	float window_width;
+	float window_height;
 };
 
 Vector2f get_pos_delta(Vector2f old_pos, Vector2f new_pos);

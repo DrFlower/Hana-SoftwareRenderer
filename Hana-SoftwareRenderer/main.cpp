@@ -82,6 +82,8 @@ int main()
 	callbacks.scroll_callback = scroll_callback;
 	callbacks.key_callback = key_callback;
 
+	record.window_width = WINDOW_WIDTH;
+	record.window_height = WINDOW_HEIGHT;
 	window_set_userdata(window, &record);
 	input_set_callbacks(window, callbacks);
 
