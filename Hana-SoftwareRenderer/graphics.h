@@ -12,5 +12,5 @@ struct DrawData {
 	RenderBuffer* renderbuffer;
 };
 
-void graphics_draw_triangle(DrawData* appdata);
+void graphics_draw_triangle(DrawData* app_data);
 #endif
