@@ -4,7 +4,7 @@
 #include "renderbuffer.h"
 #include "mathapi.h"
 
-struct Matrial {
+struct Material {
 	TGAImage* diffuse_map;
 	TGAImage* normal_map;
 	TGAImage* specular_map;
@@ -15,7 +15,7 @@ struct Matrial {
 };
 
 struct ShaderData {
-	Matrial* matrial;
+	Material* matrial;
 	RenderBuffer* targetBuffer;
 	RenderBuffer* shadow_map;
 	bool enable_shadow;

@@ -74,7 +74,7 @@ Scene::~Scene() {
 SingleModelScene::SingleModelScene(const char* modelName, RenderBuffer* renderBuffer) :Scene(renderBuffer) {
 	gameobject = new GameObject_StaticModel(modelName);
 
-	material = new Matrial();
+	material = new Material();
 	material->diffuse_map = gameobject->model->get_diffuse_map();
 	material->normal_map = gameobject->model->get_normal_map();
 	material->specular_map = gameobject->model->get_specular_map();
@@ -153,7 +153,7 @@ MultiModelScene::MultiModelScene(RenderBuffer* renderBuffer) :Scene(renderBuffer
 
 	gameobject = new GameObject_StaticModel[2]{ *go_1 ,*go_2 };
 
-	Matrial* m_1 = new Matrial();
+	Material* m_1 = new Material();
 	m_1->diffuse_map = go_1->model->get_diffuse_map();
 	m_1->normal_map = go_1->model->get_normal_map();
 	m_1->specular_map = go_1->model->get_specular_map();
@@ -162,7 +162,7 @@ MultiModelScene::MultiModelScene(RenderBuffer* renderBuffer) :Scene(renderBuffer
 	m_1->gloss = 50;
 	m_1->bump_scale = 1;
 
-	Matrial* m_2 = new Matrial();
+	Material* m_2 = new Material();
 	m_2->diffuse_map = go_2->model->get_diffuse_map();
 	m_2->normal_map = go_2->model->get_normal_map();
 	m_2->specular_map = go_2->model->get_specular_map();
@@ -171,7 +171,7 @@ MultiModelScene::MultiModelScene(RenderBuffer* renderBuffer) :Scene(renderBuffer
 	m_2->gloss = 50;
 	m_2->bump_scale = 1;
 
-	material = new Matrial[2]{ *m_1, *m_2 };
+	material = new Material[2]{ *m_1, *m_2 };
 
 	//GroundShader ground_shader = GroundShader();
 	//ToonShader toon_shader = ToonShader();
@@ -194,7 +194,7 @@ MultiModelScene::~MultiModelScene() {
 	delete shader;
 }
 
-void MultiModelScene::AddModel(int index, const char* filename, Matrial* material, IShader* shader, Vector3f position, Vector3f rotation, Vector3f scale) {
+void MultiModelScene::AddModel(int index, const char* filename, Material* material, IShader* shader, Vector3f position, Vector3f rotation, Vector3f scale) {
 	//gameobject[index] = *new GameObject_StaticModel("african_head.obj", position, rotation, scale);
 
 }
