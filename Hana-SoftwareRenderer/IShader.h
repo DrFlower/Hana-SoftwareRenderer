@@ -104,13 +104,6 @@ struct IShader {
 		return tex->get(_uv[0], _uv[1])[0] / 1.f;
 	}
 
-	Vector3f viewport_transform(int width, int height, Vector3f ndc_coord) {
-		float x = (ndc_coord.x + 1) * 0.5f * (float)width;   /* [-1, 1] -> [0, w] */
-		float y = (ndc_coord.y + 1) * 0.5f * (float)height;  /* [-1, 1] -> [0, h] */
-		float z = (ndc_coord.z + 1) * 0.5f;                  /* [-1, 1] -> [0, 1] */
-		return Vector3f(x, y, z);
-	}
-
 	int is_in_shadow(Vector4f depth_pos, float n_dot_l) {
 
 		if (shader_data->enable_shadow && shader_data->shadow_map)

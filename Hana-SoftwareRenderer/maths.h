@@ -12,6 +12,8 @@
 float clamp(float f, float min, float max);
 float saturate(float f);
 
+Vector3f viewport_transform(int width, int height, Vector3f ndc_coord);
+
 /* transformation matrices */
 Matrix4x4 translate(float tx, float ty, float tz);
 Matrix4x4 scale(float sx, float sy, float sz);
