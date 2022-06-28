@@ -145,67 +145,67 @@ void SingleModelScene::on_key_input(keycode_t key, int pressed) {
 		}
 	}
 }
-
-MultiModelScene::MultiModelScene(RenderBuffer* renderBuffer) :Scene(renderBuffer) {
-
-	GameObject_StaticModel* go_1 = new GameObject_StaticModel("african_head.obj");
-	GameObject_StaticModel* go_2 = new GameObject_StaticModel("floor.obj", Vector3f(0, -1, 0), Vector3f(-90, 0, 0), Vector3f(0.5f, 0.5f, 0.5f));
-
-	gameobject = new GameObject_StaticModel[2]{ *go_1 ,*go_2 };
-
-	Material* m_1 = new Material();
-	m_1->diffuse_map = go_1->model->get_diffuse_map();
-	m_1->normal_map = go_1->model->get_normal_map();
-	m_1->specular_map = go_1->model->get_specular_map();
-	m_1->color = Color::White;
-	m_1->specular = Color::White;
-	m_1->gloss = 50;
-	m_1->bump_scale = 1;
-
-	Material* m_2 = new Material();
-	m_2->diffuse_map = go_2->model->get_diffuse_map();
-	m_2->normal_map = go_2->model->get_normal_map();
-	m_2->specular_map = go_2->model->get_specular_map();
-	m_2->color = Color::White;
-	m_2->specular = Color::White;
-	m_2->gloss = 50;
-	m_2->bump_scale = 1;
-
-	material = new Material[2]{ *m_1, *m_2 };
-
-	//GroundShader ground_shader = GroundShader();
-	//ToonShader toon_shader = ToonShader();
-	//TextureShader texture_shader = TextureShader();
-	//TextureWithLightShader text_with_light_shader = TextureWithLightShader();
-	//BlinnShader blinn_shader = BlinnShader();
-
-	BlinnShader* shader_1 = new BlinnShader();
-	BlinnShader* shader_2 = new BlinnShader();
-	shader = new BlinnShader[2]{ *shader_1 ,*shader_2 };
-
-
-	draw_model = new DrawModel[2]{ {light,go_1, m_1, shader_1},{light,go_2, m_2, shader_2} };
-}
-
-MultiModelScene::~MultiModelScene() {
-	delete[] draw_model;
-	delete[] gameobject;
-	delete[] material;
-	delete shader;
-}
-
-void MultiModelScene::AddModel(int index, const char* filename, Material* material, IShader* shader, Vector3f position, Vector3f rotation, Vector3f scale) {
-	//gameobject[index] = *new GameObject_StaticModel("african_head.obj", position, rotation, scale);
-
-}
-
-void MultiModelScene::tick(float delta_time) {
-	Scene::tick(delta_time);
-
-	for (int i = 0; i < 2; i++)
-	{
-		draw_model[i].draw(camera, frameBuffer, enable_shadow);
-	}
-
-
-}
+//
+//MultiModelScene::MultiModelScene(RenderBuffer* renderBuffer) :Scene(renderBuffer) {
+//
+//	GameObject_StaticModel* go_1 = new GameObject_StaticModel("african_head.obj");
+//	GameObject_StaticModel* go_2 = new GameObject_StaticModel("floor.obj", Vector3f(0, -1, 0), Vector3f(-90, 0, 0), Vector3f(0.5f, 0.5f, 0.5f));
+//
+//	gameobject = new GameObject_StaticModel[2]{ *go_1 ,*go_2 };
+//
+//	Material* m_1 = new Material();
+//	m_1->diffuse_map = go_1->model->get_diffuse_map();
+//	m_1->normal_map = go_1->model->get_normal_map();
+//	m_1->specular_map = go_1->model->get_specular_map();
+//	m_1->color = Color::White;
+//	m_1->specular = Color::White;
+//	m_1->gloss = 50;
+//	m_1->bump_scale = 1;
+//
+//	Material* m_2 = new Material();
+//	m_2->diffuse_map = go_2->model->get_diffuse_map();
+//	m_2->normal_map = go_2->model->get_normal_map();
+//	m_2->specular_map = go_2->model->get_specular_map();
+//	m_2->color = Color::White;
+//	m_2->specular = Color::White;
+//	m_2->gloss = 50;
+//	m_2->bump_scale = 1;
+//
+//	material = new Material[2]{ *m_1, *m_2 };
+//
+//	//GroundShader ground_shader = GroundShader();
+//	//ToonShader toon_shader = ToonShader();
+//	//TextureShader texture_shader = TextureShader();
+//	//TextureWithLightShader text_with_light_shader = TextureWithLightShader();
+//	//BlinnShader blinn_shader = BlinnShader();
+//
+//	BlinnShader* shader_1 = new BlinnShader();
+//	BlinnShader* shader_2 = new BlinnShader();
+//	shader = new BlinnShader[2]{ *shader_1 ,*shader_2 };
+//
+//
+//	draw_model = new DrawModel[2]{ {light,go_1, m_1, shader_1},{light,go_2, m_2, shader_2} };
+//}
+//
+//MultiModelScene::~MultiModelScene() {
+//	delete[] draw_model;
+//	delete[] gameobject;
+//	delete[] material;
+//	delete shader;
+//}
+//
+//void MultiModelScene::AddModel(int index, const char* filename, Material* material, IShader* shader, Vector3f position, Vector3f rotation, Vector3f scale) {
+//	//gameobject[index] = *new GameObject_StaticModel("african_head.obj", position, rotation, scale);
+//
+//}
+//
+//void MultiModelScene::tick(float delta_time) {
+//	Scene::tick(delta_time);
+//
+//	for (int i = 0; i < 2; i++)
+//	{
+//		draw_model[i].draw(camera, frameBuffer, enable_shadow);
+//	}
+//
+//
+//}

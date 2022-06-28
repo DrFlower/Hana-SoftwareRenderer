@@ -58,26 +58,23 @@ int main()
 	platform_initialize();
 	window_t* window;
 	Record record = Record();
-	float aspect;
-	float prev_time;
-	float print_time;
-	int num_frames;
+	callbacks_t callbacks = callbacks_t();
+	float prev_time = platform_get_time();
+	float print_time = prev_time;
+	int num_frames = 0;
 	const int text_size = 500;
 	char screen_text[text_size];
+	int show_num_frames = 0;
+	int show_avg_millis = 0;
+	float refresh_screen_text_timer = 0;
+	const float REFRESH_SCREEN_TEXT_TIME = 0.1;
 	snprintf(screen_text, text_size, "fps: - -, avg: - -ms\n");
 	window = window_create(WINDOW_TITLE, WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TEXT_WIDTH, WINDOW_TEXT_HEIGHT);
 	frame_buffer = new RenderBuffer(WINDOW_WIDTH, WINDOW_HEIGHT);
 
-	num_frames = 0;
-	prev_time = platform_get_time();
-	print_time = prev_time;
-
 	int scene_index = 0;
 
 	scene_info = load_scene(scene_index);
-
-	callbacks_t callbacks = callbacks_t();
-
 	callbacks.button_callback = button_callback;
 	callbacks.scroll_callback = scroll_callback;
 	callbacks.key_callback = key_callback;
@@ -87,15 +84,11 @@ int main()
 	window_set_userdata(window, &record);
 	input_set_callbacks(window, callbacks);
 
-	int show_num_frames = 0;
-	int show_avg_millis = 0;
-	float refresh_screen_text_timer = 0;
-	const float REFRESH_SCREEN_TEXT_TIME = 0.1;
 	while (!window_should_close(window)) {
 		float curr_time = platform_get_time();
 		float delta_time = curr_time - prev_time;
 
-
+		// 更新摄像机控制
 		update_camera(window, scene_info.scene->camera, &record);
 
 		if (input_key_pressed(window, KEY_W)) {
@@ -107,8 +100,10 @@ int main()
 			scene_info = load_scene(scene_index);
 		}
 
+		// 更新场景
 		scene_info.scene->tick(delta_time);
 
+		// 计算帧率和耗时
 		num_frames += 1;
 		if (curr_time - print_time >= 1) {
 			int sum_millis = (int)((curr_time - print_time) * 1000);
@@ -121,8 +116,10 @@ int main()
 		}
 		prev_time = curr_time;
 
+		// 把帧缓存绘制到UI窗口
 		window_draw_buffer(window, frame_buffer);
 
+		//更新显示文本信息
 		refresh_screen_text_timer += delta_time;
 		if (refresh_screen_text_timer > REFRESH_SCREEN_TEXT_TIME)
 		{
@@ -144,13 +141,14 @@ int main()
 			refresh_screen_text_timer -= REFRESH_SCREEN_TEXT_TIME;
 		}
 
-
+		// 重置摄像机输入参数
 		record.orbit_delta = Vector2f(0, 0);
 		record.pan_delta = Vector2f(0, 0);
 		record.dolly_delta = 0;
 		record.single_click = 0;
 		record.double_click = 0;
 
+		// 清除颜色缓存和深度缓存
 		frame_buffer->renderbuffer_clear_color(Color::Black);
 		frame_buffer->renderbuffer_clear_depth(std::numeric_limits<float>::max());
 
