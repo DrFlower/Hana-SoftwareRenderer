@@ -1,7 +1,7 @@
 #include "scene.h"
 
-Scene::Scene(RenderBuffer* renderBuffer) {
-	this->frameBuffer = renderBuffer;
+Scene::Scene(RenderBuffer* render_Buffer) {
+	this->frameBuffer = render_Buffer;
 	float aspect = (float)this->frameBuffer->width / (float)this->frameBuffer->height;
 	camera = new Camera(CAMERA_POSITION, CAMERA_TARGET, aspect);
 	light = new GameObject(Vector3f(2, 2, 2));
@@ -71,8 +71,8 @@ Scene::~Scene() {
 	delete light;
 }
 
-SingleModelScene::SingleModelScene(const char* modelName, RenderBuffer* renderBuffer) :Scene(renderBuffer) {
-	gameobject = new GameObject_StaticModel(modelName);
+SingleModelScene::SingleModelScene(const char* file_name, RenderBuffer* render_Buffer) :Scene(render_Buffer) {
+	gameobject = new GameObject_StaticModel(file_name);
 
 	material = new Material();
 	material->diffuse_map = gameobject->model->get_diffuse_map();

@@ -30,15 +30,15 @@ SceneInfo load_scene(int scene_index) {
 	{
 	case 0:
 		ret.name = "1.african_head";
-		ret.scene = new SingleModelScene("african_head.obj", frame_buffer);
+		ret.scene = new SingleModelScene("../assets/african_head/african_head.obj", frame_buffer);
 		break;
 	case 1:
 		ret.name = "2.diablo3_pose";
-		ret.scene = new SingleModelScene("diablo3_pose.obj", frame_buffer);
+		ret.scene = new SingleModelScene("../assets/diablo3_pose/diablo3_pose.obj", frame_buffer);
 		break;
 	default:
 		ret.name = "1.african_head";
-		ret.scene = new SingleModelScene("african_head.obj", frame_buffer);
+		ret.scene = new SingleModelScene("../assets/african_head/african_head.obj", frame_buffer);
 		break;
 	}
 

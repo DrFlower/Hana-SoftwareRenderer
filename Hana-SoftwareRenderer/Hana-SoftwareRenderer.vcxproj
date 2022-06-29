@@ -111,7 +111,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PostBuildEvent>
-      <Command>copy $(ProjectDir)assets $(OutputPath)</Command>
+      <Command>md $(OutputPath)assets
+xcopy /Y /S $(ProjectDir)assets $(OutputPath)assets</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -133,7 +134,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PostBuildEvent>
-      <Command>copy $(ProjectDir)assets $(OutputPath)</Command>
+      <Command>md $(OutputPath)assets
+xcopy /Y /S $(ProjectDir)assets $(OutputPath)assets</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

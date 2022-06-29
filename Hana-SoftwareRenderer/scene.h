@@ -127,7 +127,7 @@ private:
 	DrawModel* draw_model;
 	int cur_shader_index;
 public:
-	SingleModelScene(const char* modelName, RenderBuffer* renderBuffer);
+	SingleModelScene(const char* file_name, RenderBuffer* render_Buffer);
 	~SingleModelScene();
 
 	void tick(float delta_time) override;

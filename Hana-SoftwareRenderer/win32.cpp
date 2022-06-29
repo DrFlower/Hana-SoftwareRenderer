@@ -379,7 +379,7 @@ void window_draw_text(window_t* window, char* text) {
     SetWindowText(window->text_handle, wc);
     delete[] wc;
 #else
-    SetWindowText(window->text_handle, window->text);
+    SetWindowText(window->text_handle, text);
 #endif // !UNICODE
 }
 
