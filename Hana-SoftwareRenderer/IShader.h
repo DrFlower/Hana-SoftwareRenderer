@@ -119,7 +119,7 @@ struct IShader {
 			float current_depth = depth_pos[2] - depth_bias;
 
 			if (pos.x < 0 || pos.y < 0 || pos.x >= widht || pos.y >= height)
-				return 0;
+				return 1;
 
 			float closest_depth = shader_data->shadow_map->get_color(pos.x, pos.y).r;
 			return current_depth < closest_depth;

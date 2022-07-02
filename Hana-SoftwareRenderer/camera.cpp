@@ -92,8 +92,8 @@ Matrix4x4 Camera::get_proj_matrix() {
 }
 
 Vector3f Camera::get_target_position() {
-	return target;
-	//return Vector3f::Zero;
+	//return target;
+	return Vector3f::Zero;
 }
 
 Vector2f get_pos_delta(Vector2f old_pos, Vector2f new_pos, float window_height) {

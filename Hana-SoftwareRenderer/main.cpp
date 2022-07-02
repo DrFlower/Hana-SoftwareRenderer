@@ -136,7 +136,7 @@ int main()
 			strcat(screen_text, line);
 
 			strcat(screen_text, scene_info.scene->get_text());
-			
+
 			window_draw_text(window, screen_text);
 			refresh_screen_text_timer -= REFRESH_SCREEN_TEXT_TIME;
 		}

@@ -133,18 +133,3 @@ public:
 	void tick(float delta_time) override;
 	void on_key_input(keycode_t key, int pressed) override;
 };
-
-//class MultiModelScene :public Scene {
-//private:
-//	GameObject_StaticModel* gameobject;
-//	Material* material;
-//	IShader* shader;
-//	DrawModel* draw_model;
-//public:
-//	MultiModelScene(RenderBuffer* renderBuffer);
-//	~MultiModelScene();
-//
-//	void AddModel(int index, const char* filename, Material* material, IShader* shader, Vector3f position = Vector3f::Zero, Vector3f rotation = Vector3f::Zero, Vector3f scale = Vector3f::One);
-//
-//	void tick(float delta_time) override;
-//};
