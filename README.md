@@ -2,7 +2,7 @@
 
 ## 关于我实现的软渲染器
 
-![](https://blog-1300673521.cos.ap-guangzhou.myqcloud.com/HANA-SoftwareRenderer_final_screenshot.png)
+![](https://github.com/DrFlower/Hana-SoftwareRenderer/blob/main/README_IMG/HANA-SoftwareRenderer_final_screenshot.png)
 
 开发语言：C++
 
@@ -20,7 +20,7 @@
 
 ## 什么是软渲染
 
-![](https://blog-1300673521.cos.ap-guangzhou.myqcloud.com/HANA-SoftwareRenderer_GPU_Pinpline_Stage.png)
+![](https://github.com/DrFlower/Hana-SoftwareRenderer/blob/main/README_IMG/HANA-SoftwareRenderer_GPU_Pinpline_Stage.png)
 
 在了解什么是软渲染之前，我们首先要明白，在正常渲染流程中，有很多阶段是由GPU固定实现的，只有部分阶段可供我们进行配置和编程，那么对于不可修改的阶段，我们很多时候只能从书本上通过理论知识去了解片面的内容，对于更加详细的细节想必是抱有一定的疑问的。
 
@@ -28,7 +28,7 @@
 
 软渲染的实现过程大致是这样：
 
-![](https://blog-1300673521.cos.ap-guangzhou.myqcloud.com/HANA-SoftwareRenderer_implementation_process.png)
+![](https://github.com/DrFlower/Hana-SoftwareRenderer/blob/main/README_IMG/HANA-SoftwareRenderer_implementation_process.png)
 
 我们只借助一个画像素点的API，其余一切自己实现，最终达到最后一张图片的效果，这是我们的实现目的。
 
@@ -62,7 +62,7 @@
 
 ### TinyRenderer
 
-![](https://blog-1300673521.cos.ap-guangzhou.myqcloud.com/HANA-SoftwareRenderer_tinyrenderer.jpg)
+![](https://github.com/DrFlower/Hana-SoftwareRenderer/blob/main/README_IMG/HANA-SoftwareRenderer_tinyrenderer.jpg)
 
 [Tiny Renderer or how OpenGL works: software rendering in 500 lines of code](https://github.com/ssloy/tinyrenderer)
 
@@ -105,7 +105,7 @@ zauonlok给出了功能很强大的软渲染实现示例，并在回答中指出
 7. 实现基础Shader，包括基础光照模型、纹理映射、切线空间下的法线映射等。
 8. 实现ShadowMap
 
-![](https://blog-1300673521.cos.ap-guangzhou.myqcloud.com/HANA-SoftwareRenderer_tinyrederer_final.png)
+![](https://github.com/DrFlower/Hana-SoftwareRenderer/blob/main/README_IMG/HANA-SoftwareRenderer_tinyrederer_final.png)
 
 不出意外你将会得到跟我上图一样的效果，此时基本的软渲染器已经完成了。
 
@@ -116,7 +116,7 @@ zauonlok给出了功能很强大的软渲染实现示例，并在回答中指出
 第一大痛点就是，TinyRenderer是把渲染结果输出到tga图片上的，相当于是个离线渲染，有时候渲染的问题是需要调整角度观察才能发现的，这给我们的调试带来了很多的麻烦，我们第一步需要改进的就是接上图形界面，做到实时渲染，并且接上输入信号，实现摄像机控制。
 
 
-![](https://blog-1300673521.cos.ap-guangzhou.myqcloud.com/HANA-SoftwareRenderer_tinyrenderer_orbit_camera.gif)
+![](https://github.com/DrFlower/Hana-SoftwareRenderer/blob/main/README_IMG/HANA-SoftwareRenderer_tinyrenderer_orbit_camera.gif)
 
 这两步我都是直接参考zauonlok软渲工程中的代码，其中图形界面是调用了win32的API，而摄像机则是参考另一个环绕摄像机控制的开源库，这两步做完后，我们便得到上图中的控制效果。
 
@@ -210,7 +210,7 @@ public:
 
 ### 改进4：接入输入信号实现场景控制
 
-![](https://blog-1300673521.cos.ap-guangzhou.myqcloud.com/HANA-SoftwareRenderer_tinyrenderer_switch_shader.gif)
+![](https://github.com/DrFlower/Hana-SoftwareRenderer/blob/main/README_IMG/HANA-SoftwareRenderer_tinyrenderer_switch_shader.gif)
 
 参考摄像机的控制，我们可以借助win32的API接收输入信号，实现一些输入控制逻辑，如上图我们实现了通过键盘输入切换Shader和切换场景（切换模型）的逻辑。当然，我们甚至可以控制物体移动、光照方向、阴影开关等，在我们接入了上一步的场景和物体管理后，这些都可以轻松实现。
 
@@ -218,7 +218,7 @@ public:
 
 功能上已经实现得差不多了，现在我们可以把UI文本也实现了，实时输出一些必要的场景信息，可以方便我们了解当前场景状态，做进一步的功能实现和调试。
 
-![](https://blog-1300673521.cos.ap-guangzhou.myqcloud.com/HANA-SoftwareRenderer_final.gif)
+![](https://github.com/DrFlower/Hana-SoftwareRenderer/blob/main/README_IMG/HANA-SoftwareRenderer_final.gif)
 
 把帧率、摄像机和灯光的transform状态信息以及一些控制指导输出到屏幕上，另外加入了灯光方向的实时控制，这就是我的软渲染器的最终效果了！
 
