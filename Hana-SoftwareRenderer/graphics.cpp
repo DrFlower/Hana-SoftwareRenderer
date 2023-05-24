@@ -4,10 +4,29 @@
 #include "graphics.h"
 
 //https://zhuanlan.zhihu.com/p/162190576 计算机图形学补充2：齐次空间裁剪(Homogeneous Space Clipping)
-
-//clip_plane为裁剪平面的自定义结构体，vert_list存储了待裁剪凸多边形的所有顶点
-//num_vert为顶点个数，in_list为需要保留下来的裁剪平面内侧顶点的列表
-//static int clip_with_plane(clip_plane c_plane, Vector3f* vert_list, int num_vert, Vector3f* in_list)
+//
+//
+//static float cal_project_distance(clip_plane c_plane, Vector3f vertex)
+//{
+//	return (vertex - c_plane.P) * c_plane.Normal;
+//}
+//
+//static void liner_interpolate_varyings(shader_struct_v2f* from, shader_struct_v2f* to, shader_struct_v2f* ret, int sizeof_varyings, float t) {
+//	int num_floats = sizeof_varyings / sizeof(float);
+//	float* dst = (float*)ret;
+//
+//	float* from_param = (float*)(&from);
+//	float* to_param = (float*)(&to);
+//
+//	for (int i = 0; i < num_floats; i++) {
+//		dst[i] = from_param[i] + (to_param[i] - from_param[i]) * t;
+//	}
+//}
+//
+//
+////clip_plane为裁剪平面的自定义结构体，vert_list存储了待裁剪凸多边形的所有顶点
+////num_vert为顶点个数，in_list为需要保留下来的裁剪平面内侧顶点的列表
+//static int clip_with_plane(clip_plane c_plane, shader_struct_v2f* in_v2f_list, int num_vert, shader_struct_v2f* out_v2f_list)
 //{
 //	int i;
 //	int in_vert_num = 0;
@@ -18,25 +37,31 @@
 //		//从最后一个点开始，遍历所有边
 //		current_index = i;
 //		previous_index = (i - 1 + num_vert) % num_vert;
-//		Vector3f pre_vertex = vert_list[previous_index]; //边的起始点
-//		Vector3f cur_vertex = vert_list[current_index];  //边的终止点
 //
-//		float d1 = cal_project_distance(c_plane, pre_vertex);
-//		float d2 = cal_project_distance(c_plane, cur_vertex);
+//		shader_struct_v2f* pre_v2f = &in_v2f_list[previous_index]; //边的起始点
+//		shader_struct_v2f* cur_v2f = &in_v2f_list[current_index];  //边的终止点
+//
+//		//Vector3f pre_vertex = proj<3>(in_v2f_list[previous_index].clip_pos); //边的起始点
+//		//Vector3f cur_vertex = proj<3>(in_v2f_list[current_index].clip_pos);  //边的终止点
+//
+//		float d1 = cal_project_distance(c_plane, proj<3>(pre_v2f->clip_pos));
+//		float d2 = cal_project_distance(c_plane, proj<3>(cur_v2f->clip_pos));
 //
 //		//如果该边与裁剪平面有交点，则计算交点并存入in_list
 //		if (d1 * d2 < 0)
 //		{
-//			float t = get_intersect_ratio(pre_vertex, cur_vertex, c_plane); //求出t值
-//			vec3 I = vec3_lerp(pre_vertex, cur_vertex, t);
-//			in_list[in_vert_num] = I;
+//			//float t = get_intersect_ratio(pre_vertex, cur_vertex, c_plane); //求出t值
+//			float t = d1 / (d1 - d2);
+//			//vec3 I = vec3_lerp(pre_vertex, cur_vertex, t);
+//			liner_interpolate_varyings(pre_v2f, cur_v2f, &out_v2f_list[in_vert_num], sizeof(shader_struct_v2f), t);
+//			//out_v2f_list[in_vert_num] = I;
 //			in_vert_num++;
 //		}
 //
 //		//如果终止点在内侧，直接存入in_list
 //		if (d2 < 0)
 //		{
-//			in_list[in_vert_num] = cur_vertex;
+//			out_v2f_list[in_vert_num] = *cur_v2f;
 //			in_vert_num++;
 //		}
 //	}
@@ -44,7 +69,7 @@
 //	return in_vert_num;
 //}
 //
-//void draw_triangles(Vector3f* in_vert_list, Vector3f* out_vert_list)
+//void draw_triangles(shader_struct_v2f* in_v2f_list, shader_struct_v2f* out_v2f_list, int nface)
 //{
 //	//int i;
 //	////vertex shader
@@ -56,7 +81,9 @@
 //	//homogeneous clipping
 //	int num_vertex = 3;
 //
-//	num_vertex = clip_with_plane(W_PLANE, vert_list, num_vertex, in_list1);
+//	shader_struct_v2f in_list1[2]
+//
+//	num_vertex = clip_with_plane(W_PLANE, in_v2f_list, num_vertex, in_list1);
 //	num_vertex = clip_with_plane(X_RIGHT, in_list1, num_vertex, in_list2);
 //	num_vertex = clip_with_plane(X_LEFT, in_list2, num_vertex, in_list3);
 //	num_vertex = clip_with_plane(Y_TOP, in_list3, num_vertex, in_list4);
