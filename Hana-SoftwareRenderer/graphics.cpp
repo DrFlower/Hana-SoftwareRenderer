@@ -4,108 +4,129 @@
 #include "graphics.h"
 
 //https://zhuanlan.zhihu.com/p/162190576 计算机图形学补充2：齐次空间裁剪(Homogeneous Space Clipping)
-//
-//
-//static float cal_project_distance(clip_plane c_plane, Vector3f vertex)
-//{
-//	return (vertex - c_plane.P) * c_plane.Normal;
-//}
-//
-//static void liner_interpolate_varyings(shader_struct_v2f* from, shader_struct_v2f* to, shader_struct_v2f* ret, int sizeof_varyings, float t) {
-//	int num_floats = sizeof_varyings / sizeof(float);
-//	float* dst = (float*)ret;
-//
-//	float* from_param = (float*)(&from);
-//	float* to_param = (float*)(&to);
-//
-//	for (int i = 0; i < num_floats; i++) {
-//		dst[i] = from_param[i] + (to_param[i] - from_param[i]) * t;
-//	}
-//}
-//
-//
-////clip_plane为裁剪平面的自定义结构体，vert_list存储了待裁剪凸多边形的所有顶点
-////num_vert为顶点个数，in_list为需要保留下来的裁剪平面内侧顶点的列表
-//static int clip_with_plane(clip_plane c_plane, shader_struct_v2f* in_v2f_list, int num_vert, shader_struct_v2f* out_v2f_list)
-//{
-//	int i;
-//	int in_vert_num = 0;
-//	int previous_index, current_index;
-//
-//	for (i = 0; i < num_vert; i++)
-//	{
-//		//从最后一个点开始，遍历所有边
-//		current_index = i;
-//		previous_index = (i - 1 + num_vert) % num_vert;
-//
-//		shader_struct_v2f* pre_v2f = &in_v2f_list[previous_index]; //边的起始点
-//		shader_struct_v2f* cur_v2f = &in_v2f_list[current_index];  //边的终止点
-//
-//		//Vector3f pre_vertex = proj<3>(in_v2f_list[previous_index].clip_pos); //边的起始点
-//		//Vector3f cur_vertex = proj<3>(in_v2f_list[current_index].clip_pos);  //边的终止点
-//
-//		float d1 = cal_project_distance(c_plane, proj<3>(pre_v2f->clip_pos));
-//		float d2 = cal_project_distance(c_plane, proj<3>(cur_v2f->clip_pos));
-//
-//		//如果该边与裁剪平面有交点，则计算交点并存入in_list
-//		if (d1 * d2 < 0)
-//		{
-//			//float t = get_intersect_ratio(pre_vertex, cur_vertex, c_plane); //求出t值
-//			float t = d1 / (d1 - d2);
-//			//vec3 I = vec3_lerp(pre_vertex, cur_vertex, t);
-//			liner_interpolate_varyings(pre_v2f, cur_v2f, &out_v2f_list[in_vert_num], sizeof(shader_struct_v2f), t);
-//			//out_v2f_list[in_vert_num] = I;
-//			in_vert_num++;
-//		}
-//
-//		//如果终止点在内侧，直接存入in_list
-//		if (d2 < 0)
-//		{
-//			out_v2f_list[in_vert_num] = *cur_v2f;
-//			in_vert_num++;
-//		}
-//	}
-//
-//	return in_vert_num;
-//}
-//
-//void draw_triangles(shader_struct_v2f* in_v2f_list, shader_struct_v2f* out_v2f_list, int nface)
-//{
-//	//int i;
-//	////vertex shader
-//	//for (i = 0; i < 3; i++)
-//	//{
-//	//	shader.vertex_shader(nface, i);
-//	//}
-//
-//	//homogeneous clipping
-//	int num_vertex = 3;
-//
-//	shader_struct_v2f in_list1[2]
-//
-//	num_vertex = clip_with_plane(W_PLANE, in_v2f_list, num_vertex, in_list1);
-//	num_vertex = clip_with_plane(X_RIGHT, in_list1, num_vertex, in_list2);
-//	num_vertex = clip_with_plane(X_LEFT, in_list2, num_vertex, in_list3);
-//	num_vertex = clip_with_plane(Y_TOP, in_list3, num_vertex, in_list4);
-//	num_vertex = clip_with_plane(Y_BOTTOM, in_list4, num_vertex, in_list5);
-//	num_vertex = clip_with_plane(Z_NEAR, in_list5, num_vertex, in_list6);
-//	num_vertex = clip_with_plane(Z_FAR, in_list6, num_vertex, in_list7);
-//
-//	//triangle assembly
-//	for (int i = 0; i < num_vertex - 2; i++) {
-//		//构成三角面的3个顶点索引
-//		int index0 = 0;
-//		int index1 = i + 1;
-//		int index2 = i + 2;
-//
-//		Vector4f clipcoord_attri[3];
-//		clipcoord_attri[0] = in_list7[index0];
-//		clipcoord_attri[1] = in_list7[index1];
-//		clipcoord_attri[2] = in_list7[index2];
-//
-//		rasterize_triangle(clipcoord_attri, framebuffer, zbuffer, shader);
-//	}
-//}
+
+
+static float cal_project_distance(clip_plane c_plane, Vector3f vertex)
+{
+	return (vertex - c_plane.P) * c_plane.Normal;
+}
+
+static void liner_interpolate_varyings(shader_struct_v2f* from, shader_struct_v2f* to, shader_struct_v2f* ret, int sizeof_varyings, float t) {
+	int num_floats = sizeof_varyings / sizeof(float);
+	float* dst = (float*)ret;
+
+	float* from_param = (float*)(from);
+	float* to_param = (float*)(to);
+
+	for (int i = 0; i < num_floats; i++) {
+		dst[i] = from_param[i] + (to_param[i] - from_param[i]) * t;
+	}
+}
+
+
+//clip_plane为裁剪平面的自定义结构体，vert_list存储了待裁剪凸多边形的所有顶点
+//num_vert为顶点个数，in_list为需要保留下来的裁剪平面内侧顶点的列表
+static int clip_with_plane(clip_plane c_plane, shader_struct_v2f* in_v2f_list, int num_vert, shader_struct_v2f* out_v2f_list)
+{
+	int i;
+	int in_vert_num = 0;
+	int previous_index, current_index;
+
+	for (i = 0; i < num_vert; i++)
+	{
+		//从最后一个点开始，遍历所有边
+		current_index = i;
+		previous_index = (i - 1 + num_vert) % num_vert;
+
+		shader_struct_v2f* pre_v2f = &in_v2f_list[previous_index]; //边的起始点
+		shader_struct_v2f* cur_v2f = &in_v2f_list[current_index];  //边的终止点
+
+		//Vector3f pre_vertex = proj<3>(in_v2f_list[previous_index].clip_pos); //边的起始点
+		//Vector3f cur_vertex = proj<3>(in_v2f_list[current_index].clip_pos);  //边的终止点
+
+		float d1 = cal_project_distance(c_plane, proj<3>(pre_v2f->clip_pos));
+		float d2 = cal_project_distance(c_plane, proj<3>(cur_v2f->clip_pos));
+
+		//如果该边与裁剪平面有交点，则计算交点并存入in_list
+		if (d1 * d2 < 0)
+		{
+			//float t = get_intersect_ratio(pre_vertex, cur_vertex, c_plane); //求出t值
+			//float t = d1 / (d1 - d2);
+			float t = (pre_v2f->clip_pos[3] - proj<3>(pre_v2f->clip_pos) * c_plane.Axis) / (pre_v2f->clip_pos[3] - proj<3>(pre_v2f->clip_pos) * c_plane.Axis) - (cur_v2f->clip_pos[3] - cur_v2f->clip_pos[2]);
+			//float t = (cur_v2f->clip_pos[3] - cur_v2f->clip_pos[2]) / (cur_v2f->clip_pos[3] - cur_v2f->clip_pos[2]) - (pre_v2f->clip_pos[3] - pre_v2f->clip_pos[2]);
+			//vec3 I = vec3_lerp(pre_vertex, cur_vertex, t);
+			liner_interpolate_varyings(pre_v2f, cur_v2f, &out_v2f_list[in_vert_num], sizeof(shader_struct_v2f), t);
+			//out_v2f_list[in_vert_num] = I;
+			in_vert_num++;
+		}
+
+		//如果终止点在内侧，直接存入in_list
+		if (d2 < 0)
+		{
+			out_v2f_list[in_vert_num] = *cur_v2f;
+			in_vert_num++;
+		}
+	}
+
+	return in_vert_num;
+}
+
+int draw_triangles(shader_struct_v2f* in_v2f_list, shader_struct_v2f* out_v2f_list)
+{
+	//int i;
+	////vertex shader
+	//for (i = 0; i < 3; i++)
+	//{
+	//	shader.vertex_shader(nface, i);
+	//}
+
+	//homogeneous clipping
+	int num_vertex = 7476;
+
+	shader_struct_v2f in_list1[3 * 10];
+	shader_struct_v2f in_list2[3 * 10];
+	shader_struct_v2f in_list3[3 * 10];
+	shader_struct_v2f in_list4[3 * 10];
+	shader_struct_v2f in_list5[3 * 10];
+	shader_struct_v2f in_list6[3 * 10];
+
+	float fov_y = TO_RADIANS(60);
+
+	clip_plane W_PLANE{ Vector3f(0, 0, 0.00001), Vector3f(0, 0, -1), Vector3f(0, 0, 1) };
+	clip_plane X_RIGHT{ Vector3f(0, 0, 0), Vector3f(cos(fov_y / 2), 0, -sin(fov_y / 2)), Vector3f(1, 0, 0) };
+	clip_plane X_LEFT{ Vector3f(0, 0, 0), Vector3f(-cos(fov_y / 2), 0, -sin(fov_y / 2)), Vector3f(1, 0, 0) };
+	clip_plane Y_TOP{ Vector3f(0, 0, 0), Vector3f(0, cos(fov_y / 2), -sin(fov_y / 2)), Vector3f(0, 1, 0) };
+	clip_plane Y_BOTTOM{ Vector3f(0, 0, 0), Vector3f(0, -cos(fov_y / 2), -sin(fov_y / 2)), Vector3f(0, 1, 0) };
+	clip_plane Z_NEAR{ Vector3f(0, 0, 0.1), Vector3f(0, 0, -1), Vector3f(0, 0, 1) };
+	clip_plane Z_FAR{ Vector3f(0, 0, 10000), Vector3f(0, 0, 1) , Vector3f(0, 0, 1) };
+
+	//num_vertex = clip_with_plane(W_PLANE, in_v2f_list, num_vertex, in_list1);
+	//num_vertex = clip_with_plane(X_RIGHT, in_list1, num_vertex, in_list2);
+	//num_vertex = clip_with_plane(X_LEFT, in_list2, num_vertex, in_list3);
+	//num_vertex = clip_with_plane(Y_TOP, in_list3, num_vertex, in_list4);
+	//num_vertex = clip_with_plane(Y_BOTTOM, in_list4, num_vertex, in_list5);
+	//num_vertex = clip_with_plane(Z_NEAR, in_list5, num_vertex, in_list6);
+	//num_vertex = clip_with_plane(Z_FAR, in_list6, num_vertex, out_v2f_list);
+
+	num_vertex = clip_with_plane(Z_NEAR, in_v2f_list, num_vertex, out_v2f_list);
+
+	////triangle assembly
+	//for (int i = 0; i < num_vertex - 2; i++) {
+	//	//构成三角面的3个顶点索引
+	//	int index0 = 0;
+	//	int index1 = i + 1;
+	//	int index2 = i + 2;
+
+	//	Vector4f clipcoord_attri[3];
+	//	clipcoord_attri[0] = in_list7[index0];
+	//	clipcoord_attri[1] = in_list7[index1];
+	//	clipcoord_attri[2] = in_list7[index2];
+
+	//	rasterize_triangle(clipcoord_attri, framebuffer, zbuffer, shader);
+	//}
+
+	return num_vertex;
+}
 
 /*
  * for facing determination, see subsection 3.5.1 of
@@ -264,7 +285,7 @@ static void rasterize_triangle(DrawData* draw_data, shader_struct_v2f* v2f) {
 	for (int i = 0; i < 3; i++) ndc_coords[i] = proj<3>(v2f[i].clip_pos / v2f[i].clip_pos[3]);
 
 	// 背面剔除
-	if (is_back_facing(ndc_coords)) return;
+	//if (is_back_facing(ndc_coords)) return;
 
 	RenderBuffer* render_buffer = draw_data->render_buffer;
 
@@ -322,17 +343,86 @@ static void rasterize_triangle(DrawData* draw_data, shader_struct_v2f* v2f) {
 	}
 }
 
+//void graphics_draw_triangle(DrawData* draw_data) {
+//	shader_struct_v2f v2fs[3];
+//	for (int i = 0; i < draw_data->model->nfaces(); i++) {
+//		for (int j = 0; j < 3; j++) {
+//			shader_struct_a2v a2v;
+//			a2v.obj_pos = draw_data->model->vert(i, j);
+//			a2v.obj_normal = draw_data->model->normal(i, j);
+//			a2v.uv = draw_data->model->uv(i, j);
+//			v2fs[j] = draw_data->shader->vertex(&a2v);
+//		}
+//
+//		rasterize_triangle(draw_data, v2fs);
+//	}
+//}
+
+//void graphics_draw_triangle(DrawData* draw_data) {
+//	shader_struct_v2f v2fs[3];
+//	for (int i = 0; i < draw_data->model->nfaces(); i++) {
+//		for (int j = 0; j < 3; j++) {
+//			shader_struct_a2v a2v;
+//			a2v.obj_pos = draw_data->model->vert(i, j);
+//			a2v.obj_normal = draw_data->model->normal(i, j);
+//			a2v.uv = draw_data->model->uv(i, j);
+//			v2fs[j] = draw_data->shader->vertex(&a2v);
+//		}
+//
+//		shader_struct_v2f clip_v2fs[3 * 10];
+//
+//		int num_vertex = draw_triangles(v2fs, clip_v2fs);
+//
+//		//triangle assembly
+//		shader_struct_v2f ret_v2fs[3];
+//		for (int i = 0; i < num_vertex - 2; i++) {
+//			//构成三角面的3个顶点索引
+//			int index0 = 0;
+//			int index1 = i + 1;
+//			int index2 = i + 2;
+//
+//
+//			ret_v2fs[0] = clip_v2fs[index0];
+//			ret_v2fs[1] = clip_v2fs[index1];
+//			ret_v2fs[2] = clip_v2fs[index2];
+//			rasterize_triangle(draw_data, ret_v2fs);
+//		}
+//
+//		//rasterize_triangle(draw_data, v2fs);
+//	}
+//}
+
+
 void graphics_draw_triangle(DrawData* draw_data) {
-	shader_struct_v2f v2fs[3];
+	shader_struct_v2f* v2fs = new shader_struct_v2f[3 * 10000];
+	int index = 0;
 	for (int i = 0; i < draw_data->model->nfaces(); i++) {
 		for (int j = 0; j < 3; j++) {
 			shader_struct_a2v a2v;
 			a2v.obj_pos = draw_data->model->vert(i, j);
 			a2v.obj_normal = draw_data->model->normal(i, j);
 			a2v.uv = draw_data->model->uv(i, j);
-			v2fs[j] = draw_data->shader->vertex(&a2v);
+			v2fs[index] = draw_data->shader->vertex(&a2v);
+			index++;
 		}
+	}
 
-		rasterize_triangle(draw_data, v2fs);
+	shader_struct_v2f* clip_v2fs = new shader_struct_v2f[3 * 10000 * 10];
+
+	int num_vertex = draw_triangles(v2fs, clip_v2fs);
+
+	//triangle assembly
+	shader_struct_v2f ret_v2fs[3];
+	for (int i = 0; i < num_vertex - 2; i++) {
+		//构成三角面的3个顶点索引
+		int index0 = 0;
+		int index1 = i + 1;
+		int index2 = i + 2;
+
+
+		ret_v2fs[0] = clip_v2fs[index0];
+		ret_v2fs[1] = clip_v2fs[index1];
+		ret_v2fs[2] = clip_v2fs[index2];
+		rasterize_triangle(draw_data, ret_v2fs);
 	}
 }
