@@ -45,6 +45,16 @@ public:
 template<> Vector<3, float> Vector<3, float>::Zero = Vector<3, float>(0, 0, 0);
 template<> Vector<3, float> Vector<3, float>::One = Vector<3, float>(1, 1, 1);
 
+template<typename T> class Vector<4, T> {
+public:
+	T x, y, z, w;
+	Vector() :x(T()), y(T()), z(T()), w(T()) {};
+	Vector(T _x, T _y, T _z, T _w) :x(_x), y(_y), z(_z), w(_w) {};
+	template <class U> Vector<4, T>(const Vector<4, U>& v);
+	T& operator[](const size_t i) { assert(i >= 0 && i <= 3); return i == 0 ? x : i == 1 ? y : i == 2 ? z : w; }
+	const T& operator[](const size_t i) const { assert(i >= 0 && i <= 3); return i == 0 ? x : i == 1 ? y : i == 2 ? z : w; }
+};
+
 
 template<size_t SIZE, typename T> Vector<SIZE, T> operator+(Vector<SIZE, T> lhs, const Vector<SIZE, T>& rhs) {
 	for (size_t i = SIZE; i--; lhs[i] += rhs[i]);

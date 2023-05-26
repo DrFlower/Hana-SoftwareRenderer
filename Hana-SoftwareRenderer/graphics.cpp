@@ -343,20 +343,20 @@ static void rasterize_triangle(DrawData* draw_data, shader_struct_v2f* v2f) {
 	}
 }
 
-//void graphics_draw_triangle(DrawData* draw_data) {
-//	shader_struct_v2f v2fs[3];
-//	for (int i = 0; i < draw_data->model->nfaces(); i++) {
-//		for (int j = 0; j < 3; j++) {
-//			shader_struct_a2v a2v;
-//			a2v.obj_pos = draw_data->model->vert(i, j);
-//			a2v.obj_normal = draw_data->model->normal(i, j);
-//			a2v.uv = draw_data->model->uv(i, j);
-//			v2fs[j] = draw_data->shader->vertex(&a2v);
-//		}
-//
-//		rasterize_triangle(draw_data, v2fs);
-//	}
-//}
+void graphics_draw_triangle(DrawData* draw_data) {
+	shader_struct_v2f v2fs[3];
+	for (int i = 0; i < draw_data->model->nfaces(); i++) {
+		for (int j = 0; j < 3; j++) {
+			shader_struct_a2v a2v;
+			a2v.obj_pos = draw_data->model->vert(i, j);
+			a2v.obj_normal = draw_data->model->normal(i, j);
+			a2v.uv = draw_data->model->uv(i, j);
+			v2fs[j] = draw_data->shader->vertex(&a2v);
+		}
+
+		rasterize_triangle(draw_data, v2fs);
+	}
+}
 
 //void graphics_draw_triangle(DrawData* draw_data) {
 //	shader_struct_v2f v2fs[3];
@@ -393,36 +393,202 @@ static void rasterize_triangle(DrawData* draw_data, shader_struct_v2f* v2f) {
 //}
 
 
-void graphics_draw_triangle(DrawData* draw_data) {
-	shader_struct_v2f* v2fs = new shader_struct_v2f[3 * 10000];
-	int index = 0;
-	for (int i = 0; i < draw_data->model->nfaces(); i++) {
-		for (int j = 0; j < 3; j++) {
-			shader_struct_a2v a2v;
-			a2v.obj_pos = draw_data->model->vert(i, j);
-			a2v.obj_normal = draw_data->model->normal(i, j);
-			a2v.uv = draw_data->model->uv(i, j);
-			v2fs[index] = draw_data->shader->vertex(&a2v);
-			index++;
-		}
-	}
+//void graphics_draw_triangle(DrawData* draw_data) {
+//	shader_struct_v2f* v2fs = new shader_struct_v2f[3 * 10000];
+//	int index = 0;
+//	for (int i = 0; i < draw_data->model->nfaces(); i++) {
+//		for (int j = 0; j < 3; j++) {
+//			shader_struct_a2v a2v;
+//			a2v.obj_pos = draw_data->model->vert(i, j);
+//			a2v.obj_normal = draw_data->model->normal(i, j);
+//			a2v.uv = draw_data->model->uv(i, j);
+//			v2fs[index] = draw_data->shader->vertex(&a2v);
+//			index++;
+//		}
+//	}
+//
+//	shader_struct_v2f* clip_v2fs = new shader_struct_v2f[3 * 10000 * 10];
+//
+//	int num_vertex = draw_triangles(v2fs, clip_v2fs);
+//
+//	//triangle assembly
+//	shader_struct_v2f ret_v2fs[3];
+//	for (int i = 0; i < num_vertex - 2; i++) {
+//		//构成三角面的3个顶点索引
+//		int index0 = 0;
+//		int index1 = i + 1;
+//		int index2 = i + 2;
+//
+//
+//		ret_v2fs[0] = clip_v2fs[index0];
+//		ret_v2fs[1] = clip_v2fs[index1];
+//		ret_v2fs[2] = clip_v2fs[index2];
+//		rasterize_triangle(draw_data, ret_v2fs);
+//	}
+//}
 
-	shader_struct_v2f* clip_v2fs = new shader_struct_v2f[3 * 10000 * 10];
-
-	int num_vertex = draw_triangles(v2fs, clip_v2fs);
-
-	//triangle assembly
-	shader_struct_v2f ret_v2fs[3];
-	for (int i = 0; i < num_vertex - 2; i++) {
-		//构成三角面的3个顶点索引
-		int index0 = 0;
-		int index1 = i + 1;
-		int index2 = i + 2;
-
-
-		ret_v2fs[0] = clip_v2fs[index0];
-		ret_v2fs[1] = clip_v2fs[index1];
-		ret_v2fs[2] = clip_v2fs[index2];
-		rasterize_triangle(draw_data, ret_v2fs);
-	}
-}
+//
+//typedef enum {
+//	POSITIVE_W,
+//	POSITIVE_X,
+//	NEGATIVE_X,
+//	POSITIVE_Y,
+//	NEGATIVE_Y,
+//	POSITIVE_Z,
+//	NEGATIVE_Z
+//} plane_t;
+//
+//static int is_inside_plane(Vector4f coord, plane_t plane) {
+//	switch (plane) {
+//	case POSITIVE_W:
+//		return coord.w >= EPSILON;
+//	case POSITIVE_X:
+//		return coord.x <= +coord.w;
+//	case NEGATIVE_X:
+//		return coord.x >= -coord.w;
+//	case POSITIVE_Y:
+//		return coord.y <= +coord.w;
+//	case NEGATIVE_Y:
+//		return coord.y >= -coord.w;
+//	case POSITIVE_Z:
+//		return coord.z <= +coord.w;
+//	case NEGATIVE_Z:
+//		return coord.z >= -coord.w;
+//	default:
+//		assert(0);
+//		return 0;
+//	}
+//}
+//
+//static float get_intersect_ratio(Vector4f prev, Vector4f curr, plane_t plane) {
+//	switch (plane) {
+//	case POSITIVE_W:
+//		return (prev.w - EPSILON) / (prev.w - curr.w);
+//	case POSITIVE_X:
+//		return (prev.w - prev.x) / ((prev.w - prev.x) - (curr.w - curr.x));
+//	case NEGATIVE_X:
+//		return (prev.w + prev.x) / ((prev.w + prev.x) - (curr.w + curr.x));
+//	case POSITIVE_Y:
+//		return (prev.w - prev.y) / ((prev.w - prev.y) - (curr.w - curr.y));
+//	case NEGATIVE_Y:
+//		return (prev.w + prev.y) / ((prev.w + prev.y) - (curr.w + curr.y));
+//	case POSITIVE_Z:
+//		return (prev.w - prev.z) / ((prev.w - prev.z) - (curr.w - curr.z));
+//	case NEGATIVE_Z:
+//		return (prev.w + prev.z) / ((prev.w + prev.z) - (curr.w + curr.z));
+//	default:
+//		assert(0);
+//		return 0;
+//	}
+//}
+//
+//static int clip_against_plane(
+//	plane_t plane, int in_num_vertices, int varying_num_floats,
+//	shader_struct_v2f* in_v2fs,
+//	shader_struct_v2f* out_v2fs) {
+//	int out_num_vertices = 0;
+//	int i, j;
+//
+//	assert(in_num_vertices >= 3 && in_num_vertices <= MAX_VARYINGS);
+//	for (i = 0; i < in_num_vertices; i++) {
+//		int prev_index = (i - 1 + in_num_vertices) % in_num_vertices;
+//		int curr_index = i;
+//		vec4_t prev_coord = in_coords[prev_index];
+//		vec4_t curr_coord = in_coords[curr_index];
+//		float* prev_varyings = (float*)in_varyings[prev_index];
+//		float* curr_varyings = (float*)in_varyings[curr_index];
+//		int prev_inside = is_inside_plane(prev_coord, plane);
+//		int curr_inside = is_inside_plane(curr_coord, plane);
+//
+//		if (prev_inside != curr_inside) {
+//			vec4_t* dest_coord = &out_coords[out_num_vertices];
+//			float* dest_varyings = (float*)out_varyings[out_num_vertices];
+//			float ratio = get_intersect_ratio(prev_coord, curr_coord, plane);
+//
+//			*dest_coord = vec4_lerp(prev_coord, curr_coord, ratio);
+//			/*
+//			 * since this computation is performed in clip space before
+//			 * division by w, clipped varying values are perspective-correct
+//			 */
+//			for (j = 0; j < varying_num_floats; j++) {
+//				dest_varyings[j] = float_lerp(prev_varyings[j],
+//					curr_varyings[j],
+//					ratio);
+//			}
+//			out_num_vertices += 1;
+//		}
+//
+//		if (curr_inside) {
+//			vec4_t* dest_coord = &out_coords[out_num_vertices];
+//			float* dest_varyings = (float*)out_varyings[out_num_vertices];
+//			int sizeof_varyings = varying_num_floats * sizeof(float);
+//
+//			*dest_coord = curr_coord;
+//			memcpy(dest_varyings, curr_varyings, sizeof_varyings);
+//			out_num_vertices += 1;
+//		}
+//	}
+//	assert(out_num_vertices <= MAX_VARYINGS);
+//	return out_num_vertices;
+//}
+//
+//#define CLIP_IN2OUT(plane)                                                  \
+//    do {                                                                    \
+//        num_vertices = clip_against_plane(                                  \
+//            plane, num_vertices, varying_num_floats,                        \
+//            in_coords, in_varyings, out_coords, out_varyings);              \
+//        if (num_vertices < 3) {                                             \
+//            return 0;                                                       \
+//        }                                                                   \
+//    } while (0)
+//
+//#define CLIP_OUT2IN(plane)                                                  \
+//    do {                                                                    \
+//        num_vertices = clip_against_plane(                                  \
+//            plane, num_vertices, varying_num_floats,                        \
+//            out_coords, out_varyings, in_coords, in_varyings);              \
+//        if (num_vertices < 3) {                                             \
+//            return 0;                                                       \
+//        }                                                                   \
+//    } while (0)
+//
+//static int is_vertex_visible(Vector4f v) {
+//	return fabs(v.x) <= v.w && fabs(v.y) <= v.w && fabs(v.z) <= v.w;
+//}
+//
+//static int clip_triangle(
+//	int sizeof_varyings,
+//	shader_struct_v2f* in_v2fs,
+//	shader_struct_v2f* out_v2fs) {
+//	int v0_visible = is_vertex_visible(in_v2fs[0].clip_pos);
+//	int v1_visible = is_vertex_visible(in_v2fs[1].clip_pos);
+//	int v2_visible = is_vertex_visible(in_v2fs[2].clip_pos);
+//	if (v0_visible && v1_visible && v2_visible) {
+//		//out_coords[0] = in_coords[0];
+//		//out_coords[1] = in_coords[1];
+//		//out_coords[2] = in_coords[2];
+//		//memcpy(out_varyings[0], in_varyings[0], sizeof_varyings);
+//		//memcpy(out_varyings[1], in_varyings[1], sizeof_varyings);
+//		//memcpy(out_varyings[2], in_varyings[2], sizeof_varyings);
+//
+//		void* _in_v2fs = &in_v2fs[0];
+//		void* _out_v2fs = &out_v2fs[0];
+//
+//		memcpy(&out_v2fs[0], &in_v2fs[0], sizeof(shader_struct_v2f));
+//		memcpy(&out_v2fs[1], &in_v2fs[1], sizeof(shader_struct_v2f));
+//		memcpy(&out_v2fs[2], &in_v2fs[2], sizeof(shader_struct_v2f));
+//		return 3;
+//	}
+//	else {
+//		int varying_num_floats = sizeof_varyings / sizeof(float);
+//		int num_vertices = 3;
+//		CLIP_IN2OUT(POSITIVE_W);
+//		CLIP_OUT2IN(POSITIVE_X);
+//		CLIP_IN2OUT(NEGATIVE_X);
+//		CLIP_OUT2IN(POSITIVE_Y);
+//		CLIP_IN2OUT(NEGATIVE_Y);
+//		CLIP_OUT2IN(POSITIVE_Z);
+//		CLIP_IN2OUT(NEGATIVE_Z);
+//		return num_vertices;
+//	}
+//}

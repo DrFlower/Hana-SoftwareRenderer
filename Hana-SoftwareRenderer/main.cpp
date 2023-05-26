@@ -53,43 +53,8 @@ void key_callback(window_t* window, keycode_t key, int pressed) {
 	}
 }
 
-//static void liner_interpolate_varyings(shader_struct_v2f* from, shader_struct_v2f* to, shader_struct_v2f* ret, int sizeof_varyings, float t) {
-//	int num_floats = sizeof_varyings / sizeof(float);
-//	float* dst = (float*)ret;
-//
-//	float* from_param = (float*)(from);
-//	float* to_param = (float*)(to);
-//
-//	for (int i = 0; i < num_floats; i++) {
-//		dst[i] = from_param[i] + (to_param[i] - from_param[i]) * t;
-//	}
-//}
-
 int main()
 {
-	//shader_struct_v2f from;
-	////Vector3f clip_pos = Vector3f(10., 10, 10.);
-	////from.clip_pos = embed<4>(clip_pos, 10);
-	//from.world_pos = Vector3f(20., 20, 20.);
-	//from.world_normal = Vector3f(30., 30, 30.);
-	//from.uv = Vector2f(40., 40);
-	//from.intensity = 50;
-
-	//shader_struct_v2f to;
-	////Vector3f clip_pos = Vector3f(20., 20, 20.);
-	////from.clip_pos = embed<4>(clip_pos, 10.0);
-	//from.world_pos = Vector3f(30., 30, 30.);
-	//from.world_normal = Vector3f(40., 40, 40.);
-	//from.uv = Vector2f(50., 50);
-	//from.intensity = 60;
-
-	//shader_struct_v2f ret;
-
-	//liner_interpolate_varyings(&from, &to, &ret, sizeof(shader_struct_v2f), 0.5);
-
-	//if (true)
-	//	return 0;
-
 	platform_initialize();
 	window_t* window;
 	Record record = Record();
