@@ -16,6 +16,150 @@ static void liner_interpolate_varyings(shader_struct_v2f* from, shader_struct_v2
 	}
 }
 
+typedef enum {
+	POSITIVE_W,
+	POSITIVE_X,
+	NEGATIVE_X,
+	POSITIVE_Y,
+	NEGATIVE_Y,
+	POSITIVE_Z,
+	NEGATIVE_Z
+} plane_t;
+
+static int is_inside_plane(Vector4f coord, plane_t plane) {
+	switch (plane) {
+	case POSITIVE_W:
+		return coord.w >= EPSILON;
+	case POSITIVE_X:
+		return coord.x <= +coord.w;
+	case NEGATIVE_X:
+		return coord.x >= -coord.w;
+	case POSITIVE_Y:
+		return coord.y <= +coord.w;
+	case NEGATIVE_Y:
+		return coord.y >= -coord.w;
+	case POSITIVE_Z:
+		return coord.z <= +coord.w;
+	case NEGATIVE_Z:
+		return coord.z >= -coord.w;
+	default:
+		assert(0);
+		return 0;
+	}
+}
+
+static float get_intersect_ratio(Vector4f prev, Vector4f curr, plane_t plane) {
+	switch (plane) {
+	case POSITIVE_W:
+		return (prev.w - EPSILON) / (prev.w - curr.w);
+	case POSITIVE_X:
+		return (prev.w - prev.x) / ((prev.w - prev.x) - (curr.w - curr.x));
+	case NEGATIVE_X:
+		return (prev.w + prev.x) / ((prev.w + prev.x) - (curr.w + curr.x));
+	case POSITIVE_Y:
+		return (prev.w - prev.y) / ((prev.w - prev.y) - (curr.w - curr.y));
+	case NEGATIVE_Y:
+		return (prev.w + prev.y) / ((prev.w + prev.y) - (curr.w + curr.y));
+	case POSITIVE_Z:
+		return (prev.w - prev.z) / ((prev.w - prev.z) - (curr.w - curr.z));
+	case NEGATIVE_Z:
+		return (prev.w + prev.z) / ((prev.w + prev.z) - (curr.w + curr.z));
+	default:
+		assert(0);
+		return 0;
+	}
+}
+
+static int clip_against_plane(
+	plane_t plane, int in_num_vertices, int varying_num_floats,
+	shader_struct_v2f* in_v2fs,
+	shader_struct_v2f* out_v2fs) {
+	int out_num_vertices = 0;
+	int i, j;
+
+	assert(in_num_vertices >= 3);
+	for (i = 0; i < in_num_vertices; i++) {
+		int prev_index = (i - 1 + in_num_vertices) % in_num_vertices;
+		int curr_index = i;
+
+		Vector4f prev_coord = in_v2fs[prev_index].clip_pos;
+		Vector4f curr_coord = in_v2fs[curr_index].clip_pos;
+
+		shader_struct_v2f* prev_v2f = &in_v2fs[prev_index];
+		shader_struct_v2f* curr_v2f = &in_v2fs[curr_index];
+
+		int prev_inside = is_inside_plane(prev_coord, plane);
+		int curr_inside = is_inside_plane(curr_coord, plane);
+
+		if (prev_inside != curr_inside) {
+			shader_struct_v2f* out_v2f = &out_v2fs[out_num_vertices];
+
+			float ratio = get_intersect_ratio(prev_coord, curr_coord, plane);
+			liner_interpolate_varyings(prev_v2f, curr_v2f, out_v2f, sizeof(shader_struct_v2f), ratio);
+
+			out_num_vertices += 1;
+		}
+
+		if (curr_inside) {
+			shader_struct_v2f* dest_v2f = &out_v2fs[out_num_vertices];
+			memcpy(dest_v2f, curr_v2f, sizeof(shader_struct_v2f));
+			out_num_vertices += 1;
+		}
+	}
+	return out_num_vertices;
+}
+
+#define CLIP_IN2OUT(plane)                                                  \
+    do {                                                                    \
+        num_vertices = clip_against_plane(                                  \
+            plane, num_vertices, varying_num_floats,                        \
+           in_v2fs, out_v2fs);                                              \
+        if (num_vertices < 3) {                                             \
+            return 0;                                                       \
+        }                                                                   \
+    } while (0)
+
+#define CLIP_OUT2IN(plane)                                                  \
+    do {                                                                    \
+        num_vertices = clip_against_plane(                                  \
+            plane, num_vertices, varying_num_floats,                        \
+            out_v2fs, in_v2fs);                                            \
+        if (num_vertices < 3) {                                             \
+            return 0;                                                       \
+        }                                                                   \
+    } while (0)
+
+static int is_vertex_visible(Vector4f v) {
+	return fabs(v.x) <= v.w && fabs(v.y) <= v.w && fabs(v.z) <= v.w;
+}
+
+static int clip_triangle(
+	int sizeof_varyings,
+	shader_struct_v2f* in_v2fs,
+	shader_struct_v2f* out_v2fs) {
+	int v0_visible = is_vertex_visible(in_v2fs[0].clip_pos);
+	int v1_visible = is_vertex_visible(in_v2fs[1].clip_pos);
+	int v2_visible = is_vertex_visible(in_v2fs[2].clip_pos);
+	if (v0_visible && v1_visible && v2_visible) {
+		memcpy(&out_v2fs[0], &in_v2fs[0], sizeof(shader_struct_v2f));
+		memcpy(&out_v2fs[1], &in_v2fs[1], sizeof(shader_struct_v2f));
+		memcpy(&out_v2fs[2], &in_v2fs[2], sizeof(shader_struct_v2f));
+		return 3;
+	}
+	else {
+		int varying_num_floats = sizeof_varyings / sizeof(float);
+		int num_vertices = 3;
+		CLIP_IN2OUT(POSITIVE_W);
+		CLIP_OUT2IN(POSITIVE_X);
+		CLIP_IN2OUT(NEGATIVE_X);
+		CLIP_OUT2IN(POSITIVE_Y);
+		CLIP_IN2OUT(NEGATIVE_Y);
+		CLIP_OUT2IN(POSITIVE_Z);
+		CLIP_IN2OUT(NEGATIVE_Z);
+		return num_vertices;
+	}
+}
+
 /*
  * for facing determination, see subsection 3.5.1 of
  * https://www.khronos.org/registry/OpenGL/specs/es/2.0/es_full_spec_2.0.pdf
@@ -228,150 +372,6 @@ static void rasterize_triangle(DrawData* draw_data, shader_struct_v2f* v2f) {
 				render_buffer->set_color(P.x, P.y, color);
 			}
 		}
-	}
-}
-
-typedef enum {
-	POSITIVE_W,
-	POSITIVE_X,
-	NEGATIVE_X,
-	POSITIVE_Y,
-	NEGATIVE_Y,
-	POSITIVE_Z,
-	NEGATIVE_Z
-} plane_t;
-
-static int is_inside_plane(Vector4f coord, plane_t plane) {
-	switch (plane) {
-	case POSITIVE_W:
-		return coord.w >= EPSILON;
-	case POSITIVE_X:
-		return coord.x <= +coord.w;
-	case NEGATIVE_X:
-		return coord.x >= -coord.w;
-	case POSITIVE_Y:
-		return coord.y <= +coord.w;
-	case NEGATIVE_Y:
-		return coord.y >= -coord.w;
-	case POSITIVE_Z:
-		return coord.z <= +coord.w;
-	case NEGATIVE_Z:
-		return coord.z >= -coord.w;
-	default:
-		assert(0);
-		return 0;
-	}
-}
-
-static float get_intersect_ratio(Vector4f prev, Vector4f curr, plane_t plane) {
-	switch (plane) {
-	case POSITIVE_W:
-		return (prev.w - EPSILON) / (prev.w - curr.w);
-	case POSITIVE_X:
-		return (prev.w - prev.x) / ((prev.w - prev.x) - (curr.w - curr.x));
-	case NEGATIVE_X:
-		return (prev.w + prev.x) / ((prev.w + prev.x) - (curr.w + curr.x));
-	case POSITIVE_Y:
-		return (prev.w - prev.y) / ((prev.w - prev.y) - (curr.w - curr.y));
-	case NEGATIVE_Y:
-		return (prev.w + prev.y) / ((prev.w + prev.y) - (curr.w + curr.y));
-	case POSITIVE_Z:
-		return (prev.w - prev.z) / ((prev.w - prev.z) - (curr.w - curr.z));
-	case NEGATIVE_Z:
-		return (prev.w + prev.z) / ((prev.w + prev.z) - (curr.w + curr.z));
-	default:
-		assert(0);
-		return 0;
-	}
-}
-
-static int clip_against_plane(
-	plane_t plane, int in_num_vertices, int varying_num_floats,
-	shader_struct_v2f* in_v2fs,
-	shader_struct_v2f* out_v2fs) {
-	int out_num_vertices = 0;
-	int i, j;
-
-	assert(in_num_vertices >= 3);
-	for (i = 0; i < in_num_vertices; i++) {
-		int prev_index = (i - 1 + in_num_vertices) % in_num_vertices;
-		int curr_index = i;
-
-		Vector4f prev_coord = in_v2fs[prev_index].clip_pos;
-		Vector4f curr_coord = in_v2fs[curr_index].clip_pos;
-
-		shader_struct_v2f* prev_v2f = &in_v2fs[prev_index];
-		shader_struct_v2f* curr_v2f = &in_v2fs[curr_index];
-
-		int prev_inside = is_inside_plane(prev_coord, plane);
-		int curr_inside = is_inside_plane(curr_coord, plane);
-
-		if (prev_inside != curr_inside) {
-			shader_struct_v2f* out_v2f = &out_v2fs[out_num_vertices];
-			
-			float ratio = get_intersect_ratio(prev_coord, curr_coord, plane);
-			liner_interpolate_varyings(prev_v2f, curr_v2f, out_v2f, sizeof(shader_struct_v2f), ratio);
-
-			out_num_vertices += 1;
-		}
-
-		if (curr_inside) {
-			shader_struct_v2f* dest_v2f = &out_v2fs[out_num_vertices];
-			memcpy(dest_v2f, curr_v2f, sizeof(shader_struct_v2f));
-			out_num_vertices += 1;
-		}
-	}
-	return out_num_vertices;
-}
-
-#define CLIP_IN2OUT(plane)                                                  \
-    do {                                                                    \
-        num_vertices = clip_against_plane(                                  \
-            plane, num_vertices, varying_num_floats,                        \
-           in_v2fs, out_v2fs);                                              \
-        if (num_vertices < 3) {                                             \
-            return 0;                                                       \
-        }                                                                   \
-    } while (0)
-
-#define CLIP_OUT2IN(plane)                                                  \
-    do {                                                                    \
-        num_vertices = clip_against_plane(                                  \
-            plane, num_vertices, varying_num_floats,                        \
-            out_v2fs, in_v2fs);                                            \
-        if (num_vertices < 3) {                                             \
-            return 0;                                                       \
-        }                                                                   \
-    } while (0)
-
-static int is_vertex_visible(Vector4f v) {
-	return fabs(v.x) <= v.w && fabs(v.y) <= v.w && fabs(v.z) <= v.w;
-}
-
-static int clip_triangle(
-	int sizeof_varyings,
-	shader_struct_v2f* in_v2fs,
-	shader_struct_v2f* out_v2fs) {
-	int v0_visible = is_vertex_visible(in_v2fs[0].clip_pos);
-	int v1_visible = is_vertex_visible(in_v2fs[1].clip_pos);
-	int v2_visible = is_vertex_visible(in_v2fs[2].clip_pos);
-	if (v0_visible && v1_visible && v2_visible) {
-		memcpy(&out_v2fs[0], &in_v2fs[0], sizeof(shader_struct_v2f));
-		memcpy(&out_v2fs[1], &in_v2fs[1], sizeof(shader_struct_v2f));
-		memcpy(&out_v2fs[2], &in_v2fs[2], sizeof(shader_struct_v2f));
-		return 3;
-	}
-	else {
-		int varying_num_floats = sizeof_varyings / sizeof(float);
-		int num_vertices = 3;
-		CLIP_IN2OUT(POSITIVE_W);
-		CLIP_OUT2IN(POSITIVE_X);
-		CLIP_IN2OUT(NEGATIVE_X);
-		CLIP_OUT2IN(POSITIVE_Y);
-		CLIP_IN2OUT(NEGATIVE_Y);
-		CLIP_OUT2IN(POSITIVE_Z);
-		CLIP_IN2OUT(NEGATIVE_Z);
-		return num_vertices;
 	}
 }
 
