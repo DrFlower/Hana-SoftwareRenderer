@@ -11,6 +11,7 @@
 
 float clamp(float f, float min, float max);
 float saturate(float f);
+float lerp(float a, float b, float t);
 
 Vector3f viewport_transform(int width, int height, Vector3f ndc_coord);
 

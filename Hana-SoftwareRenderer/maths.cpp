@@ -8,6 +8,10 @@ float saturate(float f) {
 	return f < 0 ? 0 : (f > 1 ? 1 : f);
 }
 
+float lerp(float a, float b, float t) {
+	return a + (b - a) * t;
+}
+
 
 /*
  * for viewport transformation, see subsection 2.12.1 of
